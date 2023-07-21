@@ -21,7 +21,7 @@ export class GetAmountsOutDto {
     tokens: string[];
 
     @ApiProperty({
-        description: 'contract_address',
+        description: 'pancake合约地址',
         example: "0xCACd778509Eb52E894172f69D0BB6EF8eeb32F48"
     })
     contract_address: string;
