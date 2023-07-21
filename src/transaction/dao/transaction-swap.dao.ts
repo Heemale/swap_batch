@@ -50,7 +50,7 @@ export class TransactionSwapDao {
             .createQueryBuilder('swap_order')
             .leftJoinAndSelect('swap_order.wallet', 'wallet')
             .leftJoinAndSelect('swap_order.task', 'task')
-            .where('status = :status', {status: StatusEnum.NEVER})
+            .where('status != :status', {status: StatusEnum.CHECK_SUCCESS})
             .andWhere('executetime <= :timestamp', {timestamp: timestamp()})
             .getMany();
     }
