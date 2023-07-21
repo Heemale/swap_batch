@@ -238,20 +238,10 @@ export class TransactionService {
             const getAmountsOutDto = new GetAmountsOutDto(token_in_amount, [token_in, token_out], env.ROUTER_CONTRACT_ADDRESS);
             const market_price = new BigNumber(await get_token_price(getAmountsOutDto));
 
-            console.log({
-                order_id,
-                market_price: market_price.valueOf(),
-                max_price,
-                min_price
-            })
-
             // 市值是否在合法范围内
             const compared_to_max_price = market_price.comparedTo(max_price);
             const compared_to_min_price = market_price.comparedTo(min_price);
-            if (!(compared_to_max_price === -1 && compared_to_min_price === 1)) {
-                console.log('不在价格区间内，return');
-                continue;
-            }
+            if (!(compared_to_max_price === -1 && compared_to_min_price === 1)) continue;
 
             const amount_in = await to_wei(item.amount_in);
             const deadline = (timestamp() + 86400 * 60 * 1000);
@@ -260,7 +250,6 @@ export class TransactionService {
             nonce_map[item.wallet.address.toLowerCase()] = nonce_map[item.wallet.address.toLowerCase()] + 1;
 
             // 提交交易
-            console.log("提交交易")
             this.swap(swapDto, transactionDto, order_id);
         }
 
