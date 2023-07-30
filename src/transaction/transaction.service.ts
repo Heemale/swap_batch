@@ -208,10 +208,12 @@ export class TransactionService {
 
     execute_swap_order = async () => {
 
+        // swap总开关关闭
         if (env.SWAP_SWITCH === "0") {
-            throw new HttpException("swap总开关关闭", 400);
+            return;
         } else {
-            if (env.SWAP_SWITCH !== "1") throw new HttpException("swap开关异常", 400);
+            // swap开关异常
+            if (env.SWAP_SWITCH !== "1") return;
         }
 
         let orders = await this.transactionSwapDao.get_wrong();
@@ -291,7 +293,9 @@ export class TransactionService {
             signed = await send_transaction(transactionDto);
             receipt = await web3.eth.sendSignedTransaction(signed.rawTransaction)
                 .on('transactionHash', (hash) => {
+                    // 交易中
                     swap_status.hash = hash;
+                    swap_status.status = StatusEnum.PENDING;
                     this.transactionSwapDao.update(swap_status);
                 });
         } catch (e) {
@@ -304,6 +308,8 @@ export class TransactionService {
                 swap_status.remark = '交易过快，nonce冲突';
             } else if (e.message.includes('nonce too low')) {
                 swap_status.remark = 'nonce太低';
+            } else if (e.message.includes('TRANSFER_FROM_FAILED')) {
+                swap_status.remark = 'token不足';
             } else {
                 swap_status.remark = e.message;
             }
