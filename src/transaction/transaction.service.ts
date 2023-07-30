@@ -216,7 +216,8 @@ export class TransactionService {
             if (env.SWAP_SWITCH !== "1") return;
         }
 
-        let orders = await this.transactionSwapDao.get_wrong();
+        const orders = await this.transactionSwapDao.get_wrong();
+        let nonce_mapping = {};
 
         for (let i = 0; i < orders.length; i++) {
 
@@ -224,9 +225,21 @@ export class TransactionService {
 
             const {id: order_id, token_in, token_out} = item;
             const {token_in_amount, max_price, min_price} = item?.task;
-            const nonce = await get_nonce(item.wallet.address);
+            const wallet_address = item.wallet.address.toLowerCase();
 
+            // 转入token数量，用于计算市值（必填）
             if (token_in_amount === 0) continue;
+
+            // 计算nonce
+            let nonce;
+            if (nonce_mapping[wallet_address] !== undefined) {
+                // 如果nonce_mapping中存在当前地址的键值对，则使用保存的nonce
+                nonce = nonce_mapping[wallet_address] + 1;
+            } else {
+                // 否则获取nonce，并添加到nonce_mapping中
+                nonce = await get_nonce(wallet_address);
+            }
+            nonce_mapping[wallet_address] = nonce;
 
             // 获取市值
             const getAmountsOutDto = new GetAmountsOutDto(token_in_amount, [token_in, token_out], env.ROUTER_CONTRACT_ADDRESS);
@@ -239,8 +252,8 @@ export class TransactionService {
 
             const amount_in = await to_wei(item.amount_in);
             const deadline = (timestamp() + 86400 * 60 * 1000);
-            let swapDto = new SwapDto(amount_in, 0, [token_in, token_out], item.wallet.address, deadline, env.ROUTER_CONTRACT_ADDRESS);
-            let transactionDto = new TransactionDto(item.wallet.address, env.ROUTER_CONTRACT_ADDRESS, new BigNumber(0).valueOf(), '', item.wallet.private_key, nonce);
+            let swapDto = new SwapDto(amount_in, 0, [token_in, token_out], wallet_address, deadline, env.ROUTER_CONTRACT_ADDRESS);
+            let transactionDto = new TransactionDto(wallet_address, env.ROUTER_CONTRACT_ADDRESS, new BigNumber(0).valueOf(), '', item.wallet.private_key, nonce);
 
             // 提交交易
             this.swap(swapDto, transactionDto, order_id);
