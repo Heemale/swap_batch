@@ -5,7 +5,7 @@ import BigNumber from 'bignumber.js';
 import {env} from '../config';
 import {
     from_wei,
-    get_nonce, get_token_price,
+    get_nonce, get_token_balance, get_token_price,
     hex_to_number_string,
     remove_pad,
     send_transaction,
@@ -275,7 +275,19 @@ export class TransactionService {
 
         // TODO 检查授权额度
 
-        // TODO 检查token余额
+        // 判断token余额
+        const amount_in = swapDto.amountIn;
+        const from = transactionDto.from;
+        const token_address = swapDto.path[0];
+        const balance = await get_token_balance(from, token_address);
+        const amount_in_BN = new BigNumber(amount_in);
+        const balance_BN = new BigNumber(balance);
+        if (amount_in_BN.gt(balance_BN)) {
+            swap_status.status = StatusEnum.FAILURE;
+            swap_status.remark = "token不足";
+            await this.transactionSwapDao.update(swap_status);
+            return;
+        }
 
         // ABI编码
         try {
