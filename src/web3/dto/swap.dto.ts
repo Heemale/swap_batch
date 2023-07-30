@@ -1,6 +1,4 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { timestamp } from '../../common/util';
-import BN = require('bn.js');
 
 export class SwapDto {
 
