@@ -40,7 +40,7 @@ export class TransactionSubsidyEntity {
     @Column({comment: '交易hash', default: null})
     hash: string;
 
-    @Column({comment: '备注', type: "text", default: null})
+    @Column({comment: '备注', default: null})
     remark: string;
 
     @Column({comment: '创建时间', type: 'bigint', default: null, nullable: true})
