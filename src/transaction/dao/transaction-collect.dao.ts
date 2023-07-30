@@ -72,13 +72,13 @@ export class TransactionCollectDao {
         SELECT orders.*,wallet.address,wallet.private_key FROM (
         \tSELECT * FROM (
         \t\tSELECT * FROM fa_transaction_collect
-        \t\tWHERE token_address <> '' AND status <> '4'
+        \t\tWHERE token_address <> '' AND status <> ?
         \t\tGROUP BY wallet_id
         \t\t
         \t\tUNION ALL
         \t\t
         \t\tSELECT * FROM fa_transaction_collect
-        \t\tWHERE token_address = '' AND status <> '4'
+        \t\tWHERE token_address = '' AND status <> ?
         \t\tGROUP BY wallet_id
         \t\t
         \t) t1
@@ -87,7 +87,7 @@ export class TransactionCollectDao {
         ON orders.wallet_id = wallet.id;
         `
 
-        let [rows, fields] = await pool.query(sql, [values]);
+        let [rows,] = await pool.query(sql, [...values]);
         return rows
     }
 
