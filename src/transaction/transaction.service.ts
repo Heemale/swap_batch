@@ -218,21 +218,13 @@ export class TransactionService {
 
         let orders = await this.transactionSwapDao.get_wrong();
 
-        //设置nonce的对象
-        let nonce_map = {};
-
-        //获取各个地址的nonce
-        for (let i = 0; i < orders.length; i++) {
-            const item = orders[i];
-            nonce_map[item.wallet.address.toLowerCase()] = await get_nonce(item.wallet.address);
-        }
-
         for (let i = 0; i < orders.length; i++) {
 
             const item = orders[i];
 
             const {id: order_id, token_in, token_out} = item;
             const {token_in_amount, max_price, min_price} = item?.task;
+            const nonce = await get_nonce(item.wallet.address);
 
             if (token_in_amount === 0) continue;
 
@@ -248,8 +240,7 @@ export class TransactionService {
             const amount_in = await to_wei(item.amount_in);
             const deadline = (timestamp() + 86400 * 60 * 1000);
             let swapDto = new SwapDto(amount_in, 0, [token_in, token_out], item.wallet.address, deadline, env.ROUTER_CONTRACT_ADDRESS);
-            let transactionDto = new TransactionDto(item.wallet.address, env.ROUTER_CONTRACT_ADDRESS, new BigNumber(0).valueOf(), '', item.wallet.private_key, nonce_map[item.wallet.address.toLowerCase()]);
-            nonce_map[item.wallet.address.toLowerCase()] = nonce_map[item.wallet.address.toLowerCase()] + 1;
+            let transactionDto = new TransactionDto(item.wallet.address, env.ROUTER_CONTRACT_ADDRESS, new BigNumber(0).valueOf(), '', item.wallet.private_key, nonce);
 
             // 提交交易
             this.swap(swapDto, transactionDto, order_id);
