@@ -31,7 +31,7 @@ export class TransactionSwapEntity {
         type: 'enum',
         enum: StatusEnum,
         default: StatusEnum.NEVER,
-        comment: '状态:0=未交易,1=交易失败,2=待核验,3=核验失败,4=校验成功',
+        comment: '状态:0=未交易,1=交易失败,2=待核验,3=核验失败,4=校验成功,5=待交易',
     })
     status: StatusEnum;
 
@@ -50,7 +50,7 @@ export class TransactionSwapEntity {
     @Column({comment: '交易hash', default: null})
     hash: string;
 
-    @Column({comment: '备注', type: "text", default: null})
+    @Column({comment: '备注', default: null})
     remark: string;
 
     @Column({comment: '创建时间', type: 'bigint', default: null, nullable: true})
