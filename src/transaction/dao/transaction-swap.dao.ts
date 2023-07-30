@@ -58,6 +58,7 @@ export class TransactionSwapDao {
                 ],
             })
             .andWhere('executetime <= :timestamp', {timestamp: timestamp()})
+            .groupBy('wallet.id')
             .getMany();
     }
 
