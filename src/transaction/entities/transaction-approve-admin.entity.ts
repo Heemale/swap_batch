@@ -21,7 +21,7 @@ export class TransactionApproveAdminEntity {
         type: 'enum',
         enum: StatusEnum,
         default: StatusEnum.NEVER,
-        comment: '状态:0=未交易,1=交易失败,2=待核验,3=核验失败,4=校验成功',
+        comment: '状态:0=未交易,1=交易失败,2=待核验,3=核验失败,4=校验成功,5=待交易',
     })
     status: StatusEnum;
 
