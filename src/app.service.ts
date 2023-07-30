@@ -1,7 +1,7 @@
 import {Injectable, Logger} from '@nestjs/common';
 import {Cron, CronExpression} from "@nestjs/schedule";
 import {
-    get_nonce, get_token_price,
+    get_nonce,
     to_wei,
 } from "./web3";
 import {random, uint256_max} from "./common/util";
@@ -22,7 +22,7 @@ import {TransactionSubsidyService} from "./transaction/transaction-subsidy.servi
 import {TransactionCollectService} from "./transaction/transaction-collect.service";
 import {TransactionApproveService} from "./transaction/transaction-approve.service";
 import {TransactionService} from "./transaction/transaction.service";
-import {GetAmountsOutDto} from "./web3/dto/get-amounts-out.dto";
+import {TransactionSwapDao} from "./transaction/dao/transaction-swap.dao";
 
 @Injectable()
 export class AppService {
@@ -32,6 +32,7 @@ export class AppService {
         private readonly subsidyTransactionDao: TransactionSubsidyDao,
         private readonly approveTransactionDao: TransactionApproveDao,
         private readonly collectTransactionDao: TransactionCollectDao,
+        private readonly transactionSwapDao: TransactionSwapDao,
         private readonly taskDao: TaskDao,
         private readonly subsidyTransactionService: TransactionSubsidyService,
         private readonly approveTransactionService: TransactionApproveService,
@@ -160,23 +161,9 @@ export class AppService {
     }, 1000 * env.CREATE_TIME);
 
 
-    // @Cron(CronExpression.EVERY_10_SECONDS)
-    // async get_token_price() {
+    // @Cron(CronExpression.EVERY_5_SECONDS)
+    // async test() {
     //
-    //     const token_in = "0x397b5b9066d72ed34e5b8f4c5336a998cb2b61d1";
-    //     const token_out = "0x546028cac67fb85b00260c004695d975a23b0515";
-    //     const token_in_amount = 1000_0000;
-    //
-    //     const getAmountsOutDto_1 = new GetAmountsOutDto(token_in_amount, [token_in, token_out], env.ROUTER_CONTRACT_ADDRESS);
-    //     const A2B = await get_token_price(getAmountsOutDto_1);
-    //
-    //     const getAmountsOutDto_2 = new GetAmountsOutDto(token_in_amount, [token_out, token_in], env.ROUTER_CONTRACT_ADDRESS);
-    //     const B2A = await get_token_price(getAmountsOutDto_2);
-    //
-    //     console.log({
-    //         token_in_amount,
-    //         A2B,
-    //         B2A
-    //     })
     // }
+
 }
