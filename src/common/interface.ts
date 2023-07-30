@@ -19,6 +19,7 @@ export interface env_type {
     COllECT_SWITCH: string,
     CREATE_TIME: number,
     CREATE_TIME_LAST: number,
+    SUBMIT_SWAP_COUNTS: number,
     PORT: number,
 }
 

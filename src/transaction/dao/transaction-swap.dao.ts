@@ -5,6 +5,7 @@ import {TransactionSwapEntity} from '../entities/transaction-swap.entity';
 import {timestamp} from '../../common/util';
 import {SwapUpdateDto} from '../dto/swap/swap-update.dto';
 import {StatusEnum} from "../../common/enum";
+import {env} from "../../config";
 
 @Injectable()
 export class TransactionSwapDao {
@@ -46,6 +47,9 @@ export class TransactionSwapDao {
     }
 
     async get_wrong() {
+
+        const counts = env.SUBMIT_SWAP_COUNTS;
+
         return await this.dataSource.getRepository(TransactionSwapEntity)
             .createQueryBuilder('swap_order')
             .leftJoinAndSelect('swap_order.wallet', 'wallet')
@@ -58,7 +62,7 @@ export class TransactionSwapDao {
                 ],
             })
             .andWhere('executetime <= :timestamp', {timestamp: timestamp()})
-            .groupBy('wallet.id')
+            .limit(counts)
             .getMany();
     }
 

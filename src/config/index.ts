@@ -1301,9 +1301,10 @@ export let env: env_type = {
         }, {"type": "uint256[]", "name": "nums", "internalType": "uint256[]"}]
     }],
     SWAP_SWITCH: '0',
-    COllECT_SWITCH : '0',
+    COllECT_SWITCH: '0',
     CREATE_TIME: 86400,
     CREATE_TIME_LAST: 86400,
+    SUBMIT_SWAP_COUNTS: 10,
     PORT: PORT,
 };
 
@@ -1330,11 +1331,12 @@ export const get_config = async () => {
         'COllECT_SWITCH',
         'CREATE_TIME',
         'EXECUTE_TIME',
+        'SUBMIT_SWAP_COUNTS',
     ];
     let sql = `select * from fa_config where name in (?);`;
-    let rows, fields;
+    let rows;
     try {
-        [rows, fields] = await pool.query(sql, [values]);
+        [rows,] = await pool.query(sql, [values]);
     } catch (e) {
         return {status: -1, msg: e};
     }
@@ -1354,7 +1356,8 @@ export const update_env = async () => {
         PANCAKE_ROUTER_ABI,
         SWAP_SWITCH,
         COllECT_SWITCH,
-        CREATE_TIME;
+        CREATE_TIME,
+        SUBMIT_SWAP_COUNTS;
 
     for (let i = 0; i < _config.msg.length; i++) {
         let item = _config.msg[i];
@@ -1367,6 +1370,7 @@ export const update_env = async () => {
         if (item.name === 'SWAP_SWITCH') SWAP_SWITCH = item.value;
         if (item.name === 'COllECT_SWITCH') COllECT_SWITCH = item.value;
         if (item.name === 'CREATE_TIME') CREATE_TIME = parseInt(item.value);
+        if (item.name === 'SUBMIT_SWAP_COUNTS') SUBMIT_SWAP_COUNTS = parseInt(item.value);
     }
 
     if (HTTP_PROVIDER !== undefined) env.HTTP_PROVIDER = HTTP_PROVIDER;
@@ -1378,5 +1382,6 @@ export const update_env = async () => {
     if (SWAP_SWITCH !== undefined) env.SWAP_SWITCH = SWAP_SWITCH;
     if (COllECT_SWITCH !== undefined) env.COllECT_SWITCH = COllECT_SWITCH;
     if (CREATE_TIME !== undefined) env.CREATE_TIME = CREATE_TIME;
+    if (SUBMIT_SWAP_COUNTS !== undefined) env.SUBMIT_SWAP_COUNTS = SUBMIT_SWAP_COUNTS;
 
 }
