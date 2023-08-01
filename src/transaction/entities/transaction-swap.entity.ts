@@ -50,6 +50,9 @@ export class TransactionSwapEntity {
     @Column({comment: '交易hash', default: null})
     hash: string;
 
+    @Column({comment: '失败次数', nullable: false ,default : 0})
+    failed_counts: number;
+
     @Column({comment: '备注', default: null})
     remark: string;
 

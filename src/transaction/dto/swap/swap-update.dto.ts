@@ -1,14 +1,15 @@
-import {ApiProperty, ApiPropertyOptional} from '@nestjs/swagger';
+import {ApiProperty} from '@nestjs/swagger';
 import {StatusEnum} from '../../../common/enum';
 
 export class SwapUpdateDto {
 
-    constructor(id: number, status: StatusEnum, remark: string, amount_out: string, swap_hash: string) {
+    constructor(id: number, status: StatusEnum, remark: string, amount_out: string, hash: string, failed: boolean) {
         this.id = id;
         this.status = status;
         this.remark = remark;
         this.amount_out = amount_out;
-        this.hash = swap_hash;
+        this.hash = hash;
+        this.failed = failed;
     }
 
     @ApiProperty({description: 'ID'})
@@ -25,5 +26,8 @@ export class SwapUpdateDto {
 
     @ApiProperty({description: '交易hash'})
     hash: string;
+
+    @ApiProperty({description: '是否记录失败次数'})
+    failed: boolean;
 
 }

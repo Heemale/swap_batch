@@ -206,7 +206,7 @@ export class TransactionService {
         return '创建排程的订单已提交';
     }
 
-    execute_swap_order = async () => {
+    execute_swap_order = async (type: "never" | "failed") => {
 
         // swap总开关关闭
         if (env.SWAP_SWITCH === "0") {
@@ -216,7 +216,7 @@ export class TransactionService {
             if (env.SWAP_SWITCH !== "1") return;
         }
 
-        const orders = await this.transactionSwapDao.get_wrong();
+        const orders = await this.transactionSwapDao.get(type);
         let nonce_mapping = {};
 
         for (let i = 0; i < orders.length; i++) {
@@ -265,7 +265,7 @@ export class TransactionService {
 
         let web3, data, signed, receipt;
 
-        let swap_status = new SwapUpdateDto(order_id, StatusEnum.NEVER, null, null, null);
+        let swap_status = new SwapUpdateDto(order_id, StatusEnum.NEVER, null, null, null, false);
 
         // 连接区块链
         try {
@@ -289,6 +289,7 @@ export class TransactionService {
         if (amount_in_BN.gt(balance_BN)) {
             swap_status.status = StatusEnum.FAILURE;
             swap_status.remark = "token不足";
+            swap_status.failed = true;
             await this.transactionSwapDao.update(swap_status);
             return;
         }
@@ -300,6 +301,7 @@ export class TransactionService {
         } catch (e) {
             swap_status.status = StatusEnum.FAILURE;
             swap_status.remark = e.message;
+            swap_status.failed = true;
             await this.transactionSwapDao.update(swap_status);
             return;
         }
@@ -320,14 +322,19 @@ export class TransactionService {
                 swap_status.remark = 'RPC连接失败';
             } else if (e.message.includes('insufficient funds for gas * price + value')) {
                 swap_status.remark = 'gas不足';
+                swap_status.failed = true;
             } else if (e.message.includes('replacement transaction underpriced')) {
                 swap_status.remark = '交易过快，nonce冲突';
+                swap_status.failed = true;
             } else if (e.message.includes('nonce too low')) {
                 swap_status.remark = 'nonce太低';
+                swap_status.failed = true;
             } else if (e.message.includes('TRANSFER_FROM_FAILED')) {
                 swap_status.remark = 'token不足';
+                swap_status.failed = true;
             } else {
                 swap_status.remark = e.message;
+                swap_status.failed = true;
             }
 
             swap_status.status = StatusEnum.FAILURE;

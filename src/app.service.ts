@@ -44,7 +44,8 @@ export class AppService {
     private readonly monitor_subsidy_orders_logger = new Logger("定时任务：打款");
     private readonly monitor_approve_orders_logger = new Logger("定时任务：授权");
     private readonly monitor_collect_orders_logger = new Logger("定时任务：归集");
-    private readonly monitor_swap_orders_logger = new Logger("定时任务：swap");
+    private readonly monitor_swap_orders_never_logger = new Logger("定时任务：swap_never");
+    private readonly monitor_swap_orders_filed_logger = new Logger("定时任务：swap_filed");
     private readonly update_env_logger = new Logger("定时任务：更新配置");
     private readonly monitor_task_swap_logger = new Logger("定时任务：根据task创建swap订单");
 
@@ -124,11 +125,19 @@ export class AppService {
 
 
     @Cron(CronExpression.EVERY_MINUTE)
-    async monitor_swap_orders() {
+    async monitor_swap_orders_never() {
 
-        this.monitor_swap_orders_logger.log("√");
+        this.monitor_swap_orders_never_logger.log("√");
 
-        this.transactionService.execute_swap_order();
+        this.transactionService.execute_swap_order("never");
+    }
+
+    @Cron(CronExpression.EVERY_MINUTE)
+    async monitor_swap_orders_failed() {
+
+        this.monitor_swap_orders_filed_logger.log("√");
+
+        this.transactionService.execute_swap_order("failed");
     }
 
 
