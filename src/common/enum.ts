@@ -6,3 +6,22 @@ export enum StatusEnum {
     CHECK_SUCCESS = '4', //校验成功
     PENDING = '5', // 待交易
 }
+
+export enum TradeType {
+    BUY = '0',
+    SELL = '1',
+}
+
+export enum TaskStatus {
+    PREPARE_ING = '0',
+    PREPARE_DONE = '1',
+    SWAP_ING = '2',
+    SWAP_DONE = '3',
+    COLLECT_ING = '4',
+    COLLECT_DONE = '5',
+}
+
+export enum WalletSource {
+    CREATE = '0',
+    PICK = '1'
+}

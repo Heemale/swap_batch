@@ -1,10 +1,11 @@
 import {Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn} from 'typeorm';
-import {WalletEntity} from '../../address/entities/wallet.entity';
+import {WalletEntity} from '../../wallet/entities/wallet.entity';
 import {StatusEnum} from '../../common/enum';
 import {TaskEntity} from './task.entity';
+import {BaseEntity} from "../../common/entity/base.entity";
 
 @Entity('fa_transaction_swap')
-export class TransactionSwapEntity {
+export class TransactionSwapEntity extends BaseEntity {
 
     @PrimaryGeneratedColumn({comment: 'swap记录ID'})
     id: number;
@@ -55,12 +56,6 @@ export class TransactionSwapEntity {
 
     @Column({comment: '备注', default: null})
     remark: string;
-
-    @Column({comment: '创建时间', type: 'bigint', default: null, nullable: true})
-    createtime: number;
-
-    @Column({comment: '更新时间', type: 'bigint', default: null, nullable: true})
-    updatetime: number;
 
     @ManyToOne(() => WalletEntity, (wallet) => wallet.swap_orders)
     @JoinColumn({name: 'wallet_id'})

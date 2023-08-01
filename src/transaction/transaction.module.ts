@@ -3,9 +3,7 @@ import {TransactionService} from './transaction.service';
 import {TransactionController} from './transaction.controller';
 import {TypeOrmModule} from '@nestjs/typeorm';
 import {TransactionSubsidyEntity} from './entities/transaction-subsidy.entity';
-import {WalletEntity} from '../address/entities/wallet.entity';
 import {TransactionSubsidyDao} from './dao/transaction-subsidy.dao';
-import {AddressDao} from '../address/dao/address.dao';
 import {TransactionSwapEntity} from './entities/transaction-swap.entity';
 import {TransactionSwapDao} from './dao/transaction-swap.dao';
 import {TransactionApproveEntity} from './entities/transaction-approve.entity';
@@ -19,27 +17,33 @@ import {TransactionSubsidyService} from "./transaction-subsidy.service";
 import {TransactionApproveService} from "./transaction-approve.service";
 import {TransactionApproveAdminEntity} from "./entities/transaction-approve-admin.entity";
 import {TransactionApproveAdminDao} from "./dao/transaction-approve-admin.dao";
+import {TradePairEntity} from "./entities/trade-pair.entity";
+import {AdminTradePairEntity} from "./entities/admin-trade-pair.entity";
+import {WalletDao} from "../wallet/dao/wallet.dao";
+import {WalletEntity} from "../wallet/entities/wallet.entity";
 
 @Module({
     imports: [
         TypeOrmModule.forFeature([
             WalletEntity,
-            TransactionSubsidyEntity,
-            TransactionApproveAdminEntity,
             TaskEntity,
+            TransactionSubsidyEntity,
             TransactionApproveEntity,
+            TransactionApproveAdminEntity,
             TransactionSwapEntity,
             TransactionCollectEntity,
+            TradePairEntity,
+            AdminTradePairEntity,
         ]),
     ],
     controllers: [TransactionController],
     providers: [
+        WalletDao,
+        TaskDao,
         TransactionService,
-        AddressDao,
         TransactionSubsidyDao,
         TransactionApproveDao,
         TransactionApproveAdminDao,
-        TaskDao,
         TransactionSwapDao,
         TransactionCollectDao,
         TransactionSubsidyService,
@@ -47,12 +51,12 @@ import {TransactionApproveAdminDao} from "./dao/transaction-approve-admin.dao";
         TransactionCollectService,
     ],
     exports: [
+        WalletDao,
+        TaskDao,
         TransactionService,
-        AddressDao,
         TransactionSubsidyDao,
         TransactionApproveDao,
         TransactionApproveAdminDao,
-        TaskDao,
         TransactionSwapDao,
         TransactionCollectDao,
         TransactionSubsidyService,

@@ -4,9 +4,10 @@ import {
     PrimaryGeneratedColumn,
 } from 'typeorm';
 import {StatusEnum} from '../../common/enum';
+import {BaseEntity} from "../../common/entity/base.entity";
 
 @Entity('fa_transaction_approve_admin')
-export class TransactionApproveAdminEntity {
+export class TransactionApproveAdminEntity extends BaseEntity {
 
     @PrimaryGeneratedColumn({comment: '授权记录ID'})
     id: number;
@@ -39,11 +40,5 @@ export class TransactionApproveAdminEntity {
 
     @Column({comment: '备注', default: null})
     remark: string;
-
-    @Column({comment: '创建时间', type: 'bigint', default: null, nullable: true})
-    createtime: number;
-
-    @Column({comment: '更新时间', type: 'bigint', default: null, nullable: true})
-    updatetime: number;
 
 }

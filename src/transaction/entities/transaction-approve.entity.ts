@@ -5,11 +5,12 @@ import {
     JoinColumn, ManyToOne, Unique,
 } from 'typeorm';
 import {StatusEnum} from '../../common/enum';
-import {WalletEntity} from '../../address/entities/wallet.entity';
+import {WalletEntity} from '../../wallet/entities/wallet.entity';
+import {BaseEntity} from "../../common/entity/base.entity";
 
 @Entity('fa_transaction_approve')
 @Unique('unique_token_wallet', ['token_address', 'wallet'])
-export class TransactionApproveEntity {
+export class TransactionApproveEntity extends BaseEntity {
 
     @PrimaryGeneratedColumn({comment: '授权记录ID'})
     id: number;
@@ -39,12 +40,6 @@ export class TransactionApproveEntity {
 
     @Column({comment: '备注', default: null})
     remark: string;
-
-    @Column({comment: '创建时间', type: 'bigint', default: null, nullable: true})
-    createtime: number;
-
-    @Column({comment: '更新时间', type: 'bigint', default: null, nullable: true})
-    updatetime: number;
 
     @ManyToOne(() => WalletEntity, (wallet) => wallet.approve_orders)
     @JoinColumn({name: 'wallet_id'})

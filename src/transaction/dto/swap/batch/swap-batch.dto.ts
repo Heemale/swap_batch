@@ -1,5 +1,5 @@
 import {ApiProperty, ApiPropertyOptional} from '@nestjs/swagger';
-import {formatTimestamp, timestamp} from "../../../../common/util";
+import {format_timestamp, timestamp} from "../../../../common/util";
 
 export class SwapBatchDto {
 
@@ -28,10 +28,10 @@ export class SwapBatchDto {
     @ApiProperty({description: '是否区间交易:0=否,1=是', default: 1, example: 1})
     readonly range_switch: number;
 
-    @ApiProperty({description: '区间起始时间', example: formatTimestamp(timestamp())})
+    @ApiProperty({description: '区间起始时间', example: format_timestamp(timestamp())})
     readonly rangestarttime: string;
 
-    @ApiProperty({description: '区间结束时间', example: formatTimestamp(timestamp() + 3600 * 4)})
+    @ApiProperty({description: '区间结束时间', example: format_timestamp(timestamp() + 3600 * 4)})
     readonly rangeendtime: string;
 
     @ApiProperty({description: '起始编号', default: 1, example: 1})

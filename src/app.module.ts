@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { AddressModule } from './address/address.module';
 import { TransactionModule } from './transaction/transaction.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { env } from './config';
 import {ScheduleModule} from "@nestjs/schedule";
+import {WalletModule} from "./wallet/wallet.module";
 
 @Module({
   imports: [
@@ -20,7 +20,7 @@ import {ScheduleModule} from "@nestjs/schedule";
       'synchronize': true,
       'logging': false,
     }),
-    AddressModule,
+    WalletModule,
     TransactionModule,
     ScheduleModule.forRoot(),
   ],

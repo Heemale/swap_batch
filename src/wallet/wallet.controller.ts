@@ -1,30 +1,30 @@
 import {Controller, Post, Body} from '@nestjs/common';
-import {AddressService} from './address.service';
-import {CreateAddressDto} from './dto/create-address.dto';
+import {CreateWalletBatchDto} from './dto/create-wallet-batch.dto';
 import {ApiOperation, ApiTags} from '@nestjs/swagger';
 import {UpdateIntervalDto} from "./dto/update-interval.dto";
+import {WalletDao} from "./dao/wallet.dao";
 
 @ApiTags('钱包')
-@Controller('address')
-export class AddressController {
+@Controller('wallet')
+export class WalletController {
 
     constructor(
-        private readonly addressService: AddressService
+        private readonly walletDao: WalletDao
     ) {
     }
-    
+
 
     @ApiOperation({summary: '创建钱包'})
     @Post()
-    create(@Body() createAddressDto: CreateAddressDto) {
-        return this.addressService.create(createAddressDto);
+    create(@Body() createWalletDto: CreateWalletBatchDto) {
+        return this.walletDao.create(createWalletDto);
     }
 
 
     @ApiOperation({summary: '批量更新间隔时间'})
     @Post('interval')
     update_interval(@Body() updateIntervalDto: UpdateIntervalDto) {
-        return this.addressService.update_interval(updateIntervalDto);
+        return this.walletDao.update_interval(updateIntervalDto);
     }
 
 }
