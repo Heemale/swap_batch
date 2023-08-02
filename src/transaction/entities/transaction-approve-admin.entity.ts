@@ -11,6 +11,9 @@ export class TransactionApproveAdminEntity extends TransactionEntity {
     @PrimaryGeneratedColumn({comment: '授权记录ID'})
     id: number;
 
+    @Column({comment: '授权记录编号'})
+    admin_approve_num: number;
+
     @Column({comment: '钱包地址'})
     wallet : string;
 

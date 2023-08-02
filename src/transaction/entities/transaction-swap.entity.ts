@@ -9,6 +9,9 @@ export class TransactionSwapEntity extends TransactionEntity {
     @PrimaryGeneratedColumn({comment: 'swap记录ID'})
     id: number;
 
+    @Column({comment: 'swap记录编号'})
+    admin_swap_num: number;
+
     @Column({comment: '第几次循环', default: 1})
     times: number;
 

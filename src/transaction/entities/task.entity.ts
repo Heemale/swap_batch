@@ -9,7 +9,7 @@ export class TaskEntity extends AdminEntity {
     @PrimaryGeneratedColumn({comment: 'swap任务ID'})
     id: number;
 
-    @Column({comment: 'swap编号'})
+    @Column({comment: 'swap任务编号'})
     admin_task_num: number;
 
     @Column({comment: '任务是否启动', type: 'tinyint', default: 0, nullable: false})

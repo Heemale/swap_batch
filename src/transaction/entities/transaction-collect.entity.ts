@@ -14,6 +14,9 @@ export class TransactionCollectEntity extends TransactionEntity {
     @PrimaryGeneratedColumn({comment: '归集记录ID'})
     id: number;
 
+    @Column({comment: '归集记录编号'})
+    admin_collect_num: number;
+
     @Column({comment: '金额', type: 'decimal', precision: 40, scale: 18, nullable: true})
     amount: number;
 
