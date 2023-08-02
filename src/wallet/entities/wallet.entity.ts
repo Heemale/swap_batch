@@ -1,4 +1,4 @@
-import {Entity, Column, PrimaryGeneratedColumn, OneToMany, Unique, PrimaryColumn} from 'typeorm';
+import {Entity, Column, PrimaryGeneratedColumn, OneToMany, Unique} from 'typeorm';
 import {TransactionSwapEntity} from '../../transaction/entities/transaction-swap.entity';
 import {TransactionApproveEntity} from '../../transaction/entities/transaction-approve.entity';
 import {TransactionCollectEntity} from "../../transaction/entities/transaction-collect.entity";
@@ -16,6 +16,9 @@ export class WalletEntity extends BaseEntity {
 
     @Column({comment: '管理员ID'})
     admin_id: number;
+
+    @Column({comment: '来源任务ID', nullable: true})
+    task_id: number;
 
     @Column({comment: '地址', nullable: true})
     address: string;

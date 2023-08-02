@@ -18,19 +18,28 @@ export class WalletDao {
     ) {
     }
 
+    max_admin_wallet_num = async (admin_id: number): Promise<number> => {
+
+        const existing_wallets = await this.walletEntityRepository.find({
+            where: {admin_id},
+            order: {admin_wallet_num: 'DESC'},
+            take: 1,
+        });
+
+        return existing_wallets.length > 0 ? existing_wallets[0].admin_wallet_num : 0;
+    }
+
     create = async (createWalletBatchDto: CreateWalletBatchDto) => {
 
-        // TODO 实现不同的admin_id，admin_wallet_num递增
-        // const existingWallets = await this.walletEntityRepository.find({
-        //     where: { admin_id: adminId },
-        //     order: { admin_wallet_num: 'DESC' },
-        //     take: 1,
-        // });
-        //
-        // const maxAdminWalletNum = existingWallets.length > 0 ? existingWallets[0].admin_wallet_num : 0;
+        const {admin_id, task_id, counts} = createWalletBatchDto;
 
-        const wallets = await generate_wallet_batch(createWalletBatchDto);
+        // 获取某个管理员创建的钱包最大编号
+        const max_admin_wallet_num = await this.max_admin_wallet_num(admin_id);
 
+        // 生成钱包
+        const wallets = await generate_wallet_batch(admin_id, task_id, counts, max_admin_wallet_num);
+
+        // 创建钱包
         await this.dataSource
             .createQueryBuilder()
             .insert()
@@ -69,15 +78,13 @@ export class WalletDao {
 
 }
 
-export const generate_wallet_batch = async (createWalletBatchDto: CreateWalletBatchDto): Promise<Array<CreateWalletDto>> => {
-
-    const {admin_id, counts} = createWalletBatchDto;
+export const generate_wallet_batch = async (admin_id, task_id, counts, max_admin_wallet_num): Promise<Array<CreateWalletDto>> => {
 
     const wallets: Array<CreateWalletDto> = [];
 
     for (let i = 0; i < counts; i++) {
         const {address, private_key, mnemonic} = await generate_wallet();
-        const createWalletDto = new CreateWalletDto(admin_id, address, private_key, mnemonic, timestamp());
+        const createWalletDto = new CreateWalletDto(++max_admin_wallet_num, admin_id, task_id, address, private_key, mnemonic, timestamp());
         wallets.push(createWalletDto);
     }
 
