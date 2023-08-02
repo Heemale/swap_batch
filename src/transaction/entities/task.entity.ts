@@ -1,7 +1,8 @@
-import {Column, Entity, OneToMany, PrimaryGeneratedColumn} from 'typeorm';
+import {Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn} from 'typeorm';
 import {TransactionSwapEntity} from './transaction-swap.entity';
 import {TaskStatus, TradeType, WalletSource} from "../../common/enum";
 import {AdminEntity} from "../../common/entity/admin.entity";
+import {TradePairEntity} from "./trade-pair.entity";
 
 @Entity('fa_task')
 export class TaskEntity extends AdminEntity {
@@ -38,27 +39,11 @@ export class TaskEntity extends AdminEntity {
     @Column({comment: '选择钱包数量', default: null, nullable: true})
     wallet_limit_num: number;
 
-    // TODO
-    @Column({comment: '是否一次性交易', type: 'tinyint', default: 0, nullable: false})
-    disposable_switch: number;
-
-    // TODO
-    @Column({comment: '是否密集交易', type: 'tinyint', default: 0, nullable: false})
-    dense_switch: number;
-
-    // TODO
-    @Column({comment: '是否区间交易', type: 'tinyint', default: 1, nullable: false})
-    range_switch: number;
-
     @Column({comment: '打款gas最小值', default: null, nullable: true})
     subsidy_gas_max: number;
 
     @Column({comment: '打款gas最大值', default: null, nullable: true})
     subsidy_gas_min: number;
-
-    // TODO 外键
-    @Column({comment: '交易对', default: null, nullable: true})
-    trade_id: number;
 
     @Column({
         type: 'enum',
@@ -91,15 +76,23 @@ export class TaskEntity extends AdminEntity {
     @Column({comment: '循环次数', default: 1, nullable: false})
     times: number;
 
+    @Column({comment: '是否一次性交易', type: 'tinyint', default: 0, nullable: false})
+    disposable_switch: number;
+
     // TODO
-    @Column({comment: '区间起始时间', type: 'bigint', default: null, nullable: true})
+    @Column({comment: '是否密集交易', type: 'tinyint', default: 0, nullable: false})
+    dense_switch: number;
+
+    // TODO
+    @Column({comment: '是否区间交易', type: 'tinyint', default: 1, nullable: false})
+    range_switch: number;
+
+    @Column({comment: '区间交易起始时间', type: 'bigint', default: null, nullable: true})
     rangestarttime: number;
 
-    // TODO
-    @Column({comment: '区间结束时间', type: 'bigint', default: null, nullable: true})
+    @Column({comment: '区间交易结束时间', type: 'bigint', default: null, nullable: true})
     rangeendtime: number;
 
-    // TODO
     @Column({comment: '一次性交易时间', type: 'bigint', default: null, nullable: true})
     disposabletime: number;
 
@@ -108,5 +101,9 @@ export class TaskEntity extends AdminEntity {
 
     @OneToMany(() => TransactionSwapEntity, (swap_order) => swap_order.task)
     swap_orders: TransactionSwapEntity[];
+
+    @ManyToOne(() => TradePairEntity, (trade_pair) => trade_pair.tasks)
+    @JoinColumn({name: 'task_pair_id'})
+    trade_pair: TradePairEntity;
 
 }

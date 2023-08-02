@@ -1,5 +1,6 @@
-import {Entity, Column, PrimaryGeneratedColumn} from 'typeorm';
+import {Entity, Column, PrimaryGeneratedColumn, OneToMany} from 'typeorm';
 import {BaseEntity} from "../../common/entity/base.entity";
+import {TaskEntity} from "./task.entity";
 
 @Entity('fa_trade_pair')
 export class TradePairEntity extends BaseEntity {
@@ -18,5 +19,8 @@ export class TradePairEntity extends BaseEntity {
 
     @Column({comment: 'token1名称'})
     token1_name: string;
+
+    @OneToMany(() => TaskEntity, (task) => task.trade_pair)
+    tasks: TaskEntity[];
 
 }
