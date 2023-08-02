@@ -1,9 +1,8 @@
 import {Injectable} from '@nestjs/common';
 import {DataSource, Repository} from 'typeorm';
 import {WalletEntity} from '../entities/wallet.entity';
-import {generate_wallet, timestamp} from "../../common/util";
+import {timestamp} from "../../common/util";
 import {UpdateIntervalDto} from "../dto/update-interval.dto";
-import {CreateWalletBatchDto} from "../dto/create-wallet-batch.dto";
 import {CreateWalletDto} from "../dto/create-wallet.dto";
 import {GetWalletDto} from "../dto/get-wallet.dto";
 import {InjectRepository} from "@nestjs/typeorm";
@@ -18,6 +17,7 @@ export class WalletDao {
     ) {
     }
 
+    // 获取某个管理员创建的钱包最大编号
     max_admin_wallet_num = async (admin_id: number): Promise<number> => {
 
         const existing_wallets = await this.walletEntityRepository.find({
@@ -29,17 +29,8 @@ export class WalletDao {
         return existing_wallets.length > 0 ? existing_wallets[0].admin_wallet_num : 0;
     }
 
-    create = async (createWalletBatchDto: CreateWalletBatchDto) => {
+    create = async (wallets: Array<CreateWalletDto>) => {
 
-        const {admin_id, task_id, counts} = createWalletBatchDto;
-
-        // 获取某个管理员创建的钱包最大编号
-        const max_admin_wallet_num = await this.max_admin_wallet_num(admin_id);
-
-        // 生成钱包
-        const wallets = await generate_wallet_batch(admin_id, task_id, counts, max_admin_wallet_num);
-
-        // 创建钱包
         await this.dataSource
             .createQueryBuilder()
             .insert()
@@ -78,15 +69,3 @@ export class WalletDao {
 
 }
 
-export const generate_wallet_batch = async (admin_id, task_id, counts, max_admin_wallet_num): Promise<Array<CreateWalletDto>> => {
-
-    const wallets: Array<CreateWalletDto> = [];
-
-    for (let i = 0; i < counts; i++) {
-        const {address, private_key, mnemonic} = await generate_wallet();
-        const createWalletDto = new CreateWalletDto(++max_admin_wallet_num, admin_id, task_id, address, private_key, mnemonic, timestamp());
-        wallets.push(createWalletDto);
-    }
-
-    return wallets;
-}
