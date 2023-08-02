@@ -3,12 +3,14 @@ import {CreateWalletBatchDto} from './dto/create-wallet-batch.dto';
 import {ApiOperation, ApiTags} from '@nestjs/swagger';
 import {UpdateIntervalDto} from "./dto/update-interval.dto";
 import {WalletDao} from "./dao/wallet.dao";
+import {WalletService} from "./wallet.service";
 
 @ApiTags('钱包')
 @Controller('wallet')
 export class WalletController {
 
     constructor(
+        private readonly walletService: WalletService,
         private readonly walletDao: WalletDao
     ) {
     }
@@ -17,7 +19,7 @@ export class WalletController {
     @ApiOperation({summary: '创建钱包'})
     @Post()
     create(@Body() createWalletDto: CreateWalletBatchDto) {
-        return this.walletDao.create(createWalletDto);
+        return this.walletService.create(createWalletDto);
     }
 
 
