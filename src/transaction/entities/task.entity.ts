@@ -93,6 +93,9 @@ export class TaskEntity extends AdminEntity {
     @Column({comment: '区间交易结束时间', type: 'bigint', default: null, nullable: true})
     rangeendtime: number;
 
+    @Column({comment: '归集时间', type: 'bigint', default: null, nullable: true})
+    collecttime: number;
+
     @Column({comment: '一次性交易时间', type: 'bigint', default: null, nullable: true})
     disposabletime: number;
 
