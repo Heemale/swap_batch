@@ -1,16 +1,14 @@
-import {Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn} from 'typeorm';
+import {Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn, Unique} from 'typeorm';
 import {WalletEntity} from '../../wallet/entities/wallet.entity';
 import {TaskEntity} from './task.entity';
 import {TransactionEntity} from "../../common/entity/transaction.entity";
 
 @Entity('fa_transaction_swap')
+@Unique(['admin_id', 'admin_special_num'])
 export class TransactionSwapEntity extends TransactionEntity {
 
     @PrimaryGeneratedColumn({comment: 'swap记录ID'})
     id: number;
-
-    @Column({comment: 'swap记录编号'})
-    admin_swap_num: number;
 
     @Column({comment: '第几次循环', default: 1})
     times: number;

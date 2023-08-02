@@ -5,14 +5,11 @@ import {TransactionCollectEntity} from "../../transaction/entities/transaction-c
 import {AdminEntity} from "../../common/entity/admin.entity";
 
 @Entity('fa_wallet')
-@Unique(['admin_id', 'admin_wallet_num'])
+@Unique(['admin_id', 'admin_special_num'])
 export class WalletEntity extends AdminEntity {
 
     @PrimaryGeneratedColumn({comment: '钱包ID'})
     id: number;
-
-    @Column({comment: '钱包编号'})
-    admin_wallet_num: number;
 
     @Column({comment: '来源任务ID', nullable: true})
     task_id: number;

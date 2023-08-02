@@ -1,18 +1,16 @@
 import {
     Entity,
     Column,
-    PrimaryGeneratedColumn,
+    PrimaryGeneratedColumn, Unique,
 } from 'typeorm';
 import {TransactionEntity} from "../../common/entity/transaction.entity";
 
 @Entity('fa_transaction_subsidy')
+@Unique(['admin_id', 'admin_special_num'])
 export class TransactionSubsidyEntity extends TransactionEntity {
 
     @PrimaryGeneratedColumn({comment: '打款记录ID'})
     id: number;
-
-    @Column({comment: '打款记录编号'})
-    admin_subsidy_num: number;
 
     @Column({comment: '起始编号'})
     begin_num: number;

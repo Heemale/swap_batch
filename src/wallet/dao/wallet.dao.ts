@@ -22,11 +22,11 @@ export class WalletDao {
 
         const existing_wallets = await this.walletEntityRepository.find({
             where: {admin_id},
-            order: {admin_wallet_num: 'DESC'},
+            order: {admin_special_num: 'DESC'},
             take: 1,
         });
 
-        return existing_wallets.length > 0 ? existing_wallets[0].admin_wallet_num : 0;
+        return existing_wallets.length > 0 ? existing_wallets[0].admin_special_num : 0;
     }
 
     create = async (wallets: Array<CreateWalletDto>) => {

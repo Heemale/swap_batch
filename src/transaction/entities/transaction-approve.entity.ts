@@ -9,13 +9,11 @@ import {TransactionEntity} from "../../common/entity/transaction.entity";
 
 @Entity('fa_transaction_approve')
 @Unique('unique_token_wallet', ['token_address', 'wallet'])
+@Unique(['admin_id', 'admin_special_num'])
 export class TransactionApproveEntity extends TransactionEntity {
 
     @PrimaryGeneratedColumn({comment: '授权记录ID'})
     id: number;
-
-    @Column({comment: '授权记录编号'})
-    admin_approve_num: number;
 
     @Column({comment: '金额', type: 'decimal', precision: 40, scale: 18, nullable: true})
     amount: number;
