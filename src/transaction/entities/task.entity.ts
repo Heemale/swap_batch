@@ -1,19 +1,16 @@
 import {Column, Entity, OneToMany, PrimaryGeneratedColumn} from 'typeorm';
 import {TransactionSwapEntity} from './transaction-swap.entity';
 import {TaskStatus, TradeType, WalletSource} from "../../common/enum";
-import {BaseEntity} from "../../common/entity/base.entity";
+import {AdminEntity} from "../../common/entity/admin.entity";
 
 @Entity('fa_task')
-export class TaskEntity extends BaseEntity {
+export class TaskEntity extends AdminEntity {
 
     @PrimaryGeneratedColumn({comment: 'swap任务ID'})
     id: number;
 
     @Column({comment: 'swap编号'})
     admin_task_num: number;
-
-    @Column({comment: '管理员ID'})
-    admin_id: number;
 
     @Column({comment: '任务是否启动', type: 'tinyint', default: 0, nullable: false})
     swap_switch: number;

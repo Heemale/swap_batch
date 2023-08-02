@@ -1,7 +1,8 @@
-import {BaseEntity, Column} from 'typeorm';
+import {Column} from 'typeorm';
 import {StatusEnum} from "../enum";
+import {AdminEntity} from "./admin.entity";
 
-export class TransactionEntity extends BaseEntity {
+export class TransactionEntity extends AdminEntity {
 
     @Column({comment: '订单号'})
     order_num: string;

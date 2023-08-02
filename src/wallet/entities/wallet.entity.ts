@@ -2,20 +2,17 @@ import {Entity, Column, PrimaryGeneratedColumn, OneToMany, Unique} from 'typeorm
 import {TransactionSwapEntity} from '../../transaction/entities/transaction-swap.entity';
 import {TransactionApproveEntity} from '../../transaction/entities/transaction-approve.entity';
 import {TransactionCollectEntity} from "../../transaction/entities/transaction-collect.entity";
-import {BaseEntity} from "../../common/entity/base.entity";
+import {AdminEntity} from "../../common/entity/admin.entity";
 
 @Entity('fa_wallet')
 @Unique(['admin_id', 'admin_wallet_num'])
-export class WalletEntity extends BaseEntity {
+export class WalletEntity extends AdminEntity {
 
     @PrimaryGeneratedColumn({comment: '钱包ID'})
     id: number;
 
     @Column({comment: '钱包编号'})
     admin_wallet_num: number;
-
-    @Column({comment: '管理员ID'})
-    admin_id: number;
 
     @Column({comment: '来源任务ID', nullable: true})
     task_id: number;
