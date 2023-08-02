@@ -52,6 +52,14 @@ export class WalletDao {
             .getMany();
     }
 
+    get_address_by_task_id = async (task_id: number): Promise<Array<WalletEntity>> => {
+        return await this.dataSource
+            .getRepository(WalletEntity)
+            .createQueryBuilder('wallet')
+            .where('wallet.task_id >= :task_id', {task_id})
+            .getMany();
+    }
+
     update_interval = async (updateIntervalDto: UpdateIntervalDto) => {
 
         const {interval_max, interval_min} = updateIntervalDto;
