@@ -63,7 +63,10 @@ export class TransactionApproveDao {
         return await this.dataSource.getRepository(TransactionApproveEntity)
             .createQueryBuilder('approve_orders')
             .leftJoinAndSelect('approve_orders.wallet', 'wallet')
-            .where('status != :status', {status: StatusEnum.CHECK_SUCCESS})
+            .where('(status = :status1 OR status = :status2)', {
+                status1: StatusEnum.NEVER,
+                status2: StatusEnum.FAILURE
+            })
             .groupBy("wallet_id")
             .getMany();
     }

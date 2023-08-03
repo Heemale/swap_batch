@@ -24,9 +24,10 @@ import {GetWalletDto} from "./wallet/dto/get-wallet.dto";
 import {StatusEnum, TaskStatus, TradeType, WalletSource} from "./common/enum";
 import {get_nonce, to_wei} from "./web3";
 import {env} from "./config";
-import {random} from "./common/util";
+import {random, uint256_max} from "./common/util";
 import {TransferBatchDto} from "./web3/dto/transfer-batch.dto";
 import {TransactionDto} from "./web3/dto/transaction.dto";
+import {ApproveDto} from "./web3/dto/approve.dto";
 
 @Injectable()
 export class AppService {
@@ -143,6 +144,7 @@ export class AppService {
     *       否则
     *           遍历记录去打款，先提交打款gas打款，后打款token
     * */
+
     // @Cron(CronExpression.EVERY_30_SECONDS)
     async execute_subsidy() {
 
@@ -278,31 +280,35 @@ export class AppService {
     //     // 提交交易
     //     await this.subsidyTransactionService.subsidy(transferBatchDto, transactionDto, order_id);
     // }
-    //
-    //
+
+
     // @Cron(CronExpression.EVERY_5_MINUTES)
-    // async monitor_approve_orders() {
-    //
-    //     this.monitor_approve_orders_logger.log("√");
-    //
-    //     // 获取订单
-    //     const orders = await this.approveTransactionDao.get_wrong();
-    //
-    //     // 批量提交
-    //     orders.map(async (item) => {
-    //
-    //         const {id: order_id, token_address, spender} = item;
-    //         const nonce = await get_nonce(item.wallet.address);
-    //         const approveDto = new ApproveDto(spender, uint256_max, token_address);
-    //         const transactionDto = new TransactionDto(item.wallet.address, token_address, new BigNumber(0).valueOf(), '', item.wallet.private_key, nonce);
-    //
-    //         // 提交交易
-    //         this.approveTransactionService.approve(approveDto, transactionDto, order_id);
-    //     })
-    //
-    // }
-    //
-    //
+    async monitor_approve_orders() {
+
+        this.monitor_approve_orders_logger.log("√");
+
+        // 获取订单
+        const orders = await this.transactionApproveDao.get_wrong();
+
+        // 批量提交
+        orders.map(async (item) => {
+
+            const {id: order_id, token_address, spender} = item;
+
+            // TODO 有gas就去授权
+
+            const nonce = await get_nonce(item.wallet.address);
+            const approveDto = new ApproveDto(spender, uint256_max, token_address);
+            const transactionDto = new TransactionDto(item.wallet.address, token_address, new BigNumber(0).valueOf(), '', item.wallet.private_key, nonce);
+
+            // 提交交易
+            this.approveTransactionService.approve(approveDto, transactionDto, order_id);
+        })
+
+    }
+
+
+
     // @Cron(CronExpression.EVERY_5_MINUTES)
     // async monitor_collect_orders() {
     //
@@ -317,13 +323,13 @@ export class AppService {
     //
     //
     // @Cron(CronExpression.EVERY_MINUTE)
-    // async monitor_swap_orders_never() {
-    //
-    //     this.monitor_swap_orders_never_logger.log("√");
-    //
-    //     this.transactionService.execute_swap_order("never");
-    // }
-    //
+    async monitor_swap_orders_never() {
+
+        this.monitor_swap_orders_never_logger.log("√");
+        // TODO 确保授权余额足够、token足够
+        // this.transactionService.execute_swap_order("never");
+    }
+
     // @Cron(CronExpression.EVERY_MINUTE)
     // async monitor_swap_orders_failed() {
     //
