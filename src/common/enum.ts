@@ -34,6 +34,6 @@ export enum PrepareType {
 }
 
 export enum SwitchEnum {
-    CLOSE = '0', // 关闭
-    OPEN = '1' // 打开
+    CLOSE = 0, // 关闭
+    OPEN = 1 // 打开
 }

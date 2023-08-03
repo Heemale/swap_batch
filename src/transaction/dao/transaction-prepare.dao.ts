@@ -2,7 +2,7 @@ import {Injectable} from "@nestjs/common";
 import {InjectRepository} from "@nestjs/typeorm";
 import {DataSource, Repository} from "typeorm";
 import {TransactionPrepareEntity} from "../entities/transaction-prepare.entity";
-import {PrepareType} from "../../common/enum";
+import {PrepareType, StatusEnum} from "../../common/enum";
 import {timestamp} from "../../common/util";
 
 @Injectable()
@@ -79,6 +79,18 @@ export class TransactionPrepareDao {
             return e;
         }
 
+    }
+
+    get = async (task): Promise<Array<TransactionPrepareEntity>> => {
+
+        return await this.dataSource.getRepository(TransactionPrepareEntity)
+            .createQueryBuilder('orders')
+            .where('task = :task', {task})
+            .andWhere('(status = :status1 OR status = :status2)', {
+                status1: StatusEnum.NEVER,
+                status2: StatusEnum.FAILURE
+            })
+            .getMany();
     }
 
 }

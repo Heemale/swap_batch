@@ -47,10 +47,11 @@ export class TaskDao {
         return await this.dataSource.getRepository(TaskEntity)
             .createQueryBuilder('tasks')
             .leftJoinAndSelect('tasks.trade_pair', 'trade_pair')
+            // .leftJoinAndSelect('tasks.admin_id', 'admin')
             .where('status = :status', {status})
             .andWhere('swap_switch = :swap_switch', {swap_switch: SwitchEnum.OPEN})
-            .andWhere('deletetime = :deletetime', {deletetime: null})
-            .andWhere('disposabletime = :disposabletime', {disposabletime: null})
+            .andWhere('deletetime is :deletetime', {deletetime: null})
+            .andWhere('disposabletime is :disposabletime', {disposabletime: null})
             .getMany();
     }
 

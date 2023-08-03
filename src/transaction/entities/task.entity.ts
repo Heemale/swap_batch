@@ -5,6 +5,7 @@ import {AdminEntity} from "../../common/entity/admin.entity";
 import {TradePairEntity} from "./trade-pair.entity";
 import {TransactionPrepareEntity} from "./transaction-prepare.entity";
 import {WalletEntity} from "../../wallet/entities/wallet.entity";
+import {TransactionApproveEntity} from "./transaction-approve.entity";
 
 @Entity('fa_task')
 @Unique(['admin_id', 'admin_special_num'])
@@ -108,6 +109,9 @@ export class TaskEntity extends AdminEntity {
 
     @OneToMany(() => TransactionPrepareEntity, (prepare_order) => prepare_order.task)
     prepare_orders: TransactionPrepareEntity[];
+
+    @OneToMany(() => TransactionApproveEntity, (approve_order) => approve_order.task)
+    approve_orders: TransactionApproveEntity[];
 
     @OneToMany(() => TransactionSwapEntity, (swap_order) => swap_order.task)
     swap_orders: TransactionSwapEntity[];

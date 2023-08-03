@@ -6,6 +6,7 @@ import {
 } from 'typeorm';
 import {WalletEntity} from '../../wallet/entities/wallet.entity';
 import {TransactionEntity} from "../../common/entity/transaction.entity";
+import {TaskEntity} from "./task.entity";
 
 @Entity('fa_transaction_approve')
 @Unique('unique_token_wallet', ['token_address', 'wallet'])
@@ -27,5 +28,9 @@ export class TransactionApproveEntity extends TransactionEntity {
     @ManyToOne(() => WalletEntity, (wallet) => wallet.approve_orders)
     @JoinColumn({name: 'wallet_id'})
     wallet: WalletEntity;
+
+    @ManyToOne(() => TaskEntity, (task) => task.approve_orders)
+    @JoinColumn({name: 'task_id'})
+    task:TaskEntity;
 
 }

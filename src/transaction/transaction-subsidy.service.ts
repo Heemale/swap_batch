@@ -147,84 +147,84 @@ export class TransactionSubsidyService {
     //
     // }
 
-    // subsidy = async (transferBatchDto: TransferBatchDto, transactionDto: TransactionDto, order_id) => {
-    //
-    //     let subsidy_status = new SubsidyUpdateDto(order_id, StatusEnum.NEVER, null, null);
-    //     let {token: contract_address} = transferBatchDto;
-    //     let web3, data, signed, receipt;
-    //
-    //     // 连接区块链
-    //     try {
-    //         web3 = await new Web3(new Web3.providers.HttpProvider(env.HTTP_PROVIDER));
-    //     } catch ({message}) {
-    //         subsidy_status.status = StatusEnum.FAILURE;
-    //         subsidy_status.remark = "RPC连接失败";
-    //         await this.transactionSubsidyDao.update(subsidy_status);
-    //         return;
-    //     }
-    //
-    //     if (contract_address !== '') {
-    //         try {
-    //             data = await transfer_ERC20_batch(transferBatchDto);
-    //             transactionDto.data = data;
-    //         } catch (e) {
-    //             console.log('transfer_ERC20_batch ABI编码异常 => ', e.message);
-    //             subsidy_status.status = StatusEnum.FAILURE;
-    //             subsidy_status.remark = e.message;
-    //             await this.transactionSubsidyDao.update(subsidy_status);
-    //             return;
-    //         }
-    //     } else {
-    //         try {
-    //             data = await transfer_ETH_batch(transferBatchDto);
-    //             transactionDto.data = data;
-    //         } catch (e) {
-    //             console.log('transfer_ETH_batch ABI编码异常 => ', e.message);
-    //             subsidy_status.status = StatusEnum.FAILURE;
-    //             subsidy_status.remark = e.message;
-    //             await this.transactionSubsidyDao.update(subsidy_status);
-    //             return;
-    //         }
-    //     }
-    //
-    //     try {
-    //         signed = await send_transaction(transactionDto);
-    //         receipt = await web3.eth.sendSignedTransaction(signed.rawTransaction)
-    //             .on('transactionHash', (hash) => {
-    //                 subsidy_status.hash = hash;
-    //                 this.transactionSubsidyDao.update(subsidy_status);
-    //             });
-    //     } catch (e) {
-    //         console.log('transfer_batch 发送交易异常 => ', e.message);
-    //
-    //         if (e.message.includes('CONNECTION ERROR')) {
-    //             subsidy_status.remark = 'RPC连接失败';
-    //         } else if (e.message.includes('insufficient funds for gas * price + value')) {
-    //             subsidy_status.remark = 'gas不足';
-    //         } else if (e.message.includes('replacement transaction underpriced')) {
-    //             subsidy_status.remark = '交易过快，nonce冲突';
-    //         } else if (e.message.includes('nonce too low')) {
-    //             subsidy_status.remark = 'nonce太低';
-    //         } else if (e.message.includes('multi transfer allowance not enough')) {
-    //             subsidy_status.remark = '空投合约授权额度不够';
-    //         } else if (e.message.includes('omp not enough')) {
-    //             subsidy_status.remark = 'omp不足';
-    //         } else if (e.message.includes('nonce too low')) {
-    //             subsidy_status.remark = 'nonce太低';
-    //         } else {
-    //             subsidy_status.remark = e.message;
-    //         }
-    //
-    //         subsidy_status.status = StatusEnum.FAILURE;
-    //         await this.transactionSubsidyDao.update(subsidy_status);
-    //         return;
-    //     }
-    //
-    //     // 交易成功
-    //     subsidy_status.hash = receipt.transactionHash;
-    //     subsidy_status.status = StatusEnum.CHECK_SUCCESS;
-    //     await this.transactionSubsidyDao.update(subsidy_status);
-    // }
+    subsidy = async (transferBatchDto: TransferBatchDto, transactionDto: TransactionDto, order_id) => {
+
+        let subsidy_status = new SubsidyUpdateDto(order_id, StatusEnum.NEVER, null, null);
+        let {token: contract_address} = transferBatchDto;
+        let web3, data, signed, receipt;
+
+        // 连接区块链
+        try {
+            web3 = await new Web3(new Web3.providers.HttpProvider(env.HTTP_PROVIDER));
+        } catch ({message}) {
+            subsidy_status.status = StatusEnum.FAILURE;
+            subsidy_status.remark = "RPC连接失败";
+            await this.transactionSubsidyDao.update(subsidy_status);
+            return;
+        }
+
+        if (contract_address !== '') {
+            try {
+                data = await transfer_ERC20_batch(transferBatchDto);
+                transactionDto.data = data;
+            } catch (e) {
+                console.log('transfer_ERC20_batch ABI编码异常 => ', e.message);
+                subsidy_status.status = StatusEnum.FAILURE;
+                subsidy_status.remark = e.message;
+                await this.transactionSubsidyDao.update(subsidy_status);
+                return;
+            }
+        } else {
+            try {
+                data = await transfer_ETH_batch(transferBatchDto);
+                transactionDto.data = data;
+            } catch (e) {
+                console.log('transfer_ETH_batch ABI编码异常 => ', e.message);
+                subsidy_status.status = StatusEnum.FAILURE;
+                subsidy_status.remark = e.message;
+                await this.transactionSubsidyDao.update(subsidy_status);
+                return;
+            }
+        }
+
+        try {
+            signed = await send_transaction(transactionDto);
+            receipt = await web3.eth.sendSignedTransaction(signed.rawTransaction)
+                .on('transactionHash', (hash) => {
+                    subsidy_status.hash = hash;
+                    this.transactionSubsidyDao.update(subsidy_status);
+                });
+        } catch (e) {
+            console.log('transfer_batch 发送交易异常 => ', e.message);
+
+            if (e.message.includes('CONNECTION ERROR')) {
+                subsidy_status.remark = 'RPC连接失败';
+            } else if (e.message.includes('insufficient funds for gas * price + value')) {
+                subsidy_status.remark = 'gas不足';
+            } else if (e.message.includes('replacement transaction underpriced')) {
+                subsidy_status.remark = '交易过快，nonce冲突';
+            } else if (e.message.includes('nonce too low')) {
+                subsidy_status.remark = 'nonce太低';
+            } else if (e.message.includes('multi transfer allowance not enough')) {
+                subsidy_status.remark = '空投合约授权额度不够';
+            } else if (e.message.includes('omp not enough')) {
+                subsidy_status.remark = 'omp不足';
+            } else if (e.message.includes('nonce too low')) {
+                subsidy_status.remark = 'nonce太低';
+            } else {
+                subsidy_status.remark = e.message;
+            }
+
+            subsidy_status.status = StatusEnum.FAILURE;
+            await this.transactionSubsidyDao.update(subsidy_status);
+            return;
+        }
+
+        // 交易成功
+        subsidy_status.hash = receipt.transactionHash;
+        subsidy_status.status = StatusEnum.CHECK_SUCCESS;
+        await this.transactionSubsidyDao.update(subsidy_status);
+    }
 
 }
 
@@ -257,7 +257,7 @@ export const generate_subsidy_order = (times_arr, order_num, value_max, value_mi
     return subsidy_order_list;
 }
 
-export const generate_approve_order = (approve_list, begin_num, limit_num, spender, token_addresses, order_num) => {
+export const generate_approve_order = (approve_list, begin_num, limit_num, spender, token_addresses, task_id) => {
 
     // <哪些机器人> 已授权 <哪些token>
     const approved_mapping: { [key: number]: string[] } = {};
@@ -281,7 +281,7 @@ export const generate_approve_order = (approve_list, begin_num, limit_num, spend
             const wallet_id = input_array[j];
             if (!(wallet_id in approved_mapping) || approved_mapping[wallet_id].indexOf(token_address) == -1) {
                 approve_order_list.push({
-                    order_num, wallet: wallet_id, spender, token_address, createtime: timestamp(),
+                    task_id, wallet: wallet_id, spender, token_address, createtime: timestamp(),
                 });
             }
         }
