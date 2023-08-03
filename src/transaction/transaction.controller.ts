@@ -8,6 +8,7 @@ import {TransactionApproveService} from "./transaction-approve.service";
 import {ApproveAdminBatchDto} from "./dto/approve/batch/approve-admin-batch.dto";
 import {SubsidyApproveBatchDto} from "./dto/subsidy/batch/subsidy-approve-batch.dto";
 import {SubsidySwapBatchDto} from "./dto/subsidy/batch/subsidy-swap-batch.dto";
+import {TransactionPrepareService} from "./transaction-prepare.service";
 
 @ApiTags('交易')
 @Controller('transaction')
@@ -17,6 +18,7 @@ export class TransactionController {
         private readonly transactionSubsidyService: TransactionSubsidyService,
         private readonly transactionApproveService: TransactionApproveService,
         private readonly transactionCollectService: TransactionCollectService,
+        private readonly transactionPrepareService: TransactionPrepareService,
     ) {
     }
 

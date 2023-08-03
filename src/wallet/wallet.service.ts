@@ -23,7 +23,7 @@ export class WalletService {
         const wallets = await generate_wallet_batch(admin_id, task_id, counts, max_admin_wallet_num);
 
         // 创建钱包
-        await this.walletDao.create(wallets);
+        return await this.walletDao.create(wallets);
 
     }
 

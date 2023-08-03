@@ -30,13 +30,16 @@ export class WalletDao {
     }
 
     create = async (wallets: Array<CreateWalletDto>) => {
-
-        await this.dataSource
+        const result = await this.dataSource
             .createQueryBuilder()
             .insert()
             .into(WalletEntity)
             .values(wallets)
             .execute();
+        return {
+            begin_num: result.raw.insertId,
+            limit_num: result.raw.affectedRows
+        }
     }
 
     get_address = async (getWalletDto: GetWalletDto): Promise<Array<WalletEntity>> => {

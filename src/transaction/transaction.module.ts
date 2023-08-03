@@ -21,6 +21,9 @@ import {TradePairEntity} from "./entities/trade-pair.entity";
 import {AdminTradePairEntity} from "./entities/admin-trade-pair.entity";
 import {WalletDao} from "../wallet/dao/wallet.dao";
 import {WalletEntity} from "../wallet/entities/wallet.entity";
+import {TransactionPrepareEntity} from "./entities/transaction-prepare.entity";
+import {TransactionPrepareService} from "./transaction-prepare.service";
+import {TransactionPrepareDao} from "./dao/transaction-prepare.dao";
 
 @Module({
     imports: [
@@ -34,6 +37,7 @@ import {WalletEntity} from "../wallet/entities/wallet.entity";
             TransactionCollectEntity,
             TradePairEntity,
             AdminTradePairEntity,
+            TransactionPrepareEntity,
         ]),
     ],
     controllers: [TransactionController],
@@ -46,9 +50,11 @@ import {WalletEntity} from "../wallet/entities/wallet.entity";
         TransactionApproveAdminDao,
         TransactionSwapDao,
         TransactionCollectDao,
+        TransactionPrepareDao,
         TransactionSubsidyService,
         TransactionApproveService,
         TransactionCollectService,
+        TransactionPrepareService
     ],
     exports: [
         WalletDao,
@@ -59,9 +65,11 @@ import {WalletEntity} from "../wallet/entities/wallet.entity";
         TransactionApproveAdminDao,
         TransactionSwapDao,
         TransactionCollectDao,
+        TransactionPrepareDao,
         TransactionSubsidyService,
         TransactionApproveService,
         TransactionCollectService,
+        TransactionPrepareService
     ],
 })
 export class TransactionModule {

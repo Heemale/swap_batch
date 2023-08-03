@@ -1,8 +1,10 @@
-import {Entity, Column, PrimaryGeneratedColumn, OneToMany, Unique} from 'typeorm';
+import {Entity, Column, PrimaryGeneratedColumn, OneToMany, Unique, ManyToOne, JoinColumn} from 'typeorm';
 import {TransactionSwapEntity} from '../../transaction/entities/transaction-swap.entity';
 import {TransactionApproveEntity} from '../../transaction/entities/transaction-approve.entity';
 import {TransactionCollectEntity} from "../../transaction/entities/transaction-collect.entity";
 import {AdminEntity} from "../../common/entity/admin.entity";
+import {TransactionPrepareEntity} from "../../transaction/entities/transaction-prepare.entity";
+import {TaskEntity} from "../../transaction/entities/task.entity";
 
 @Entity('fa_wallet')
 @Unique(['admin_id', 'admin_special_num'])
@@ -37,5 +39,9 @@ export class WalletEntity extends AdminEntity {
 
     @OneToMany(() => TransactionCollectEntity, (collect_order) => collect_order.wallet)
     collect_orders: TransactionCollectEntity[];
+
+    @ManyToOne(() => TaskEntity, (task) => task.wallets)
+    @JoinColumn({name: 'task_id'})
+    task: TaskEntity;
 
 }

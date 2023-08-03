@@ -3,6 +3,8 @@ import {TransactionSwapEntity} from './transaction-swap.entity';
 import {TaskStatus, TradeType, WalletSource} from "../../common/enum";
 import {AdminEntity} from "../../common/entity/admin.entity";
 import {TradePairEntity} from "./trade-pair.entity";
+import {TransactionPrepareEntity} from "./transaction-prepare.entity";
+import {WalletEntity} from "../../wallet/entities/wallet.entity";
 
 @Entity('fa_task')
 @Unique(['admin_id', 'admin_special_num'])
@@ -17,7 +19,8 @@ export class TaskEntity extends AdminEntity {
     @Column({
         type: 'enum',
         enum: TaskStatus,
-        comment: '状态:0=未执行,1=准备中,2=准备完成,5=swap中,6=swap完成,7=归集中,8=归集完成',
+        default: TaskStatus.NEVER,
+        comment: '状态:0=未执行,1=准备中,2=准备完成,3=swap中,4=swap完成,5=归集中,6=归集完成',
     })
     status: TaskStatus;
 
@@ -99,6 +102,12 @@ export class TaskEntity extends AdminEntity {
 
     @Column({comment: '删除时间', type: 'bigint', default: null, nullable: true})
     deletetime: number;
+
+    @OneToMany(() => WalletEntity, (wallet) => wallet.task)
+    wallets: WalletEntity[];
+
+    @OneToMany(() => TransactionPrepareEntity, (prepare_order) => prepare_order.task)
+    prepare_orders: TransactionPrepareEntity[];
 
     @OneToMany(() => TransactionSwapEntity, (swap_order) => swap_order.task)
     swap_orders: TransactionSwapEntity[];

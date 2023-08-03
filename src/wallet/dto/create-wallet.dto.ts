@@ -2,8 +2,8 @@ import {ApiPropertyOptional} from '@nestjs/swagger';
 
 export class CreateWalletDto {
 
-    constructor(admin_wallet_num: number, admin_id: number, task_id: number, address: string, private_key: string, mnemonic: string, createtime: number) {
-        this.admin_wallet_num = admin_wallet_num;
+    constructor(admin_special_num: number, admin_id: number, task_id: number, address: string, private_key: string, mnemonic: string, createtime: number) {
+        this.admin_special_num = admin_special_num;
         this.admin_id = admin_id;
         this.task_id = task_id;
         this.address = address;
@@ -12,8 +12,8 @@ export class CreateWalletDto {
         this.createtime = createtime;
     }
 
-    @ApiPropertyOptional({description: '钱包编号'})
-    readonly admin_wallet_num: number;
+    @ApiPropertyOptional({description: '编号'})
+    readonly admin_special_num: number;
 
     @ApiPropertyOptional({description: '管理员ID'})
     readonly admin_id: number;

@@ -1,9 +1,9 @@
 import {Injectable} from '@nestjs/common';
 import {timestamp} from '../../common/util';
-import {pool} from "../../config";
 import {InjectRepository} from "@nestjs/typeorm";
 import {DataSource, Repository} from "typeorm";
 import {TaskEntity} from "../entities/task.entity";
+import {SwitchEnum, TaskStatus} from "../../common/enum";
 
 @Injectable()
 export class TaskDao {
@@ -15,7 +15,8 @@ export class TaskDao {
     ) {
     }
 
-    async create(task: TaskEntity) {
+    create = async (task: TaskEntity) => {
+
         return await this.dataSource
             .createQueryBuilder()
             .insert()
@@ -24,33 +25,49 @@ export class TaskDao {
             .execute();
     }
 
-    async update_disposabletime(task_id) {
+    update_disposabletime = async (id) => {
 
         try {
-            let values = [timestamp(), timestamp(), task_id];
-            let sql = `update fa_task set disposabletime = ? , updatetime = ? where id = ?;`;
-            let rows, fields;
-            try {
-                [rows, fields] = await pool.query(sql, [...values]);
-            } catch (e) {
-                console.log('update_disposabletime 异常 => ', e.message);
-                return {status: -1, msg: e};
-            }
-            return {status: 0, msg: rows};
+            await this.dataSource
+                .createQueryBuilder()
+                .update(TaskEntity)
+                .set({
+                    disposabletime: timestamp(),
+                    'updatetime': timestamp(),
+                })
+                .where('id = :id', {id})
+                .execute();
         } catch (e) {
             return e;
         }
     }
 
-}
+    get = async (status: TaskStatus) => {
 
-export async function get_tasks() {
-    let sql = `select * from fa_task_swap where swap_switch = '1' and deletetime is null and disposabletime is null;`;
-    let rows, fields;
-    try {
-        [rows, fields] = await pool.query(sql, []);
-    } catch (e) {
-        return {status: -1, msg: e};
+        return await this.dataSource.getRepository(TaskEntity)
+            .createQueryBuilder('tasks')
+            .leftJoinAndSelect('tasks.trade_pair', 'trade_pair')
+            .where('status = :status', {status})
+            .andWhere('swap_switch = :swap_switch', {swap_switch: SwitchEnum.OPEN})
+            .andWhere('deletetime = :deletetime', {deletetime: null})
+            .andWhere('disposabletime = :disposabletime', {disposabletime: null})
+            .getMany();
     }
-    return {status: 0, msg: rows};
+
+    update_status = async (id: number, status: TaskStatus) => {
+
+        try {
+            await this.dataSource
+                .createQueryBuilder()
+                .update(TaskEntity)
+                .set({
+                    status,
+                    'updatetime': timestamp(),
+                })
+                .where('id = :id', {id})
+                .execute();
+        } catch (e) {
+            return e;
+        }
+    }
 }

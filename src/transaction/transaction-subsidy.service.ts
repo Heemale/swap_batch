@@ -38,33 +38,33 @@ export class TransactionSubsidyService {
     ) {
     }
 
-    // create_subsidy_approve_order = async (subsidyApproveBatchDto: SubsidyApproveBatchDto) => {
-    //
-    //     const {begin_num, limit_num, value_max, value_min, spender, token_addresses} = subsidyApproveBatchDto;
-    //     const token_address: string = "";
-    //     const order_num = uuid();
-    //
-    //     // 生成批次数组
-    //     const times_arr = generate_subsidy_batch_array(begin_num, limit_num);
-    //
-    //     // 生成订单（打款）
-    //     const subsidy_order_list = generate_subsidy_order(times_arr, order_num, value_max, value_min, token_address);
-    //
-    //     // 创建订单（打款）
-    //     await this.transactionSubsidyDao.create(subsidy_order_list);
-    //
-    //     // 获取所有记录（授权）
-    //     const approve_list = await this.transactionApproveDao.get_all();
-    //
-    //     // 生成订单（授权）
-    //     const approve_order_list = generate_approve_order(approve_list, begin_num, limit_num, spender, token_addresses, order_num);
-    //
-    //     // 创建订单（授权）
-    //     await this.transactionApproveDao.create(approve_order_list);
-    //
-    //     return "已提交";
-    // }
-    //
+    create_subsidy_approve_order = async (subsidyApproveBatchDto: SubsidyApproveBatchDto) => {
+
+        const {begin_num, limit_num, value_max, value_min, spender, token_addresses} = subsidyApproveBatchDto;
+        const token_address: string = "";
+        const order_num = uuid();
+
+        // 生成批次数组
+        const times_arr = clusters(begin_num, limit_num);
+
+        // 生成订单（打款）
+        const subsidy_order_list = generate_subsidy_order(times_arr, order_num, value_max, value_min, token_address);
+
+        // 创建订单（打款）
+        await this.transactionSubsidyDao.create(subsidy_order_list);
+
+        // 获取所有记录（授权）
+        const approve_list = await this.transactionApproveDao.get_all();
+
+        // 生成订单（授权）
+        const approve_order_list = generate_approve_order(approve_list, begin_num, limit_num, spender, token_addresses, order_num);
+
+        // 创建订单（授权）
+        await this.transactionApproveDao.create(approve_order_list);
+
+        return "已提交";
+    }
+
     // create_subsidy_swap_order = async (subsidySwapBatchDto: SubsidySwapBatchDto) => {
     //
     //     let {
@@ -93,7 +93,7 @@ export class TransactionSubsidyService {
     //     const order_num = uuid();
     //
     //     // 生成批次数组
-    //     const times_arr = generate_subsidy_batch_array(begin_num, limit_num);
+    //     const times_arr = clusters(begin_num, limit_num);
     //
     //     // 生成订单（打款）
     //     const subsidy_order_list = generate_subsidy_order(times_arr, order_num, value_max, value_min, token_address);
@@ -102,51 +102,51 @@ export class TransactionSubsidyService {
     //     await this.transactionSubsidyDao.create(subsidy_order_list);
     //
     //     // 创建订单（task）
-    //     const task = new TaskEntity(
-    //         0,
-    //         disposable_switch,
-    //         dense_switch,
-    //         range_switch,
-    //         begin_num,
-    //         limit_num,
-    //         max_num,
-    //         min_num,
-    //         token_in_amount,
-    //         max_price,
-    //         min_price,
-    //         token_in,
-    //         token_out,
-    //         create_times,
-    //         convert_to_timestamp(rangestarttime),
-    //         convert_to_timestamp(rangeendtime),
-    //         timestamp(),
-    //         timestamp(),
-    //     );
-    //     const result = await this.taskDao.create(task);
-    //     const task_id = result?.raw?.insertId;
-    //
-    //     // 创建订单（swap）
-    //     const swapBatchDto = new SwapBatchDto(
-    //         disposable_switch,
-    //         dense_switch,
-    //         range_switch,
-    //         rangestarttime,
-    //         rangeendtime,
-    //         begin_num,
-    //         limit_num,
-    //         max_num,
-    //         min_num,
-    //         token_in,
-    //         token_out,
-    //         create_times,
-    //         task_id
-    //     );
-    //     await this.transactionService.create_swap_order(swapBatchDto);
+    //     // const task = new TaskEntity(
+    //     //     0,
+    //     //     disposable_switch,
+    //     //     dense_switch,
+    //     //     range_switch,
+    //     //     begin_num,
+    //     //     limit_num,
+    //     //     max_num,
+    //     //     min_num,
+    //     //     token_in_amount,
+    //     //     max_price,
+    //     //     min_price,
+    //     //     token_in,
+    //     //     token_out,
+    //     //     create_times,
+    //     //     convert_to_timestamp(rangestarttime),
+    //     //     convert_to_timestamp(rangeendtime),
+    //     //     timestamp(),
+    //     //     timestamp(),
+    //     // );
+    //     // const result = await this.taskDao.create(task);
+    //     // const task_id = result?.raw?.insertId;
+    //     //
+    //     // // 创建订单（swap）
+    //     // const swapBatchDto = new SwapBatchDto(
+    //     //     disposable_switch,
+    //     //     dense_switch,
+    //     //     range_switch,
+    //     //     rangestarttime,
+    //     //     rangeendtime,
+    //     //     begin_num,
+    //     //     limit_num,
+    //     //     max_num,
+    //     //     min_num,
+    //     //     token_in,
+    //     //     token_out,
+    //     //     create_times,
+    //     //     task_id
+    //     // );
+    //     // await this.transactionService.create_swap_order(swapBatchDto);
     //
     //     return "已提交";
     //
     // }
-    //
+
     // subsidy = async (transferBatchDto: TransferBatchDto, transactionDto: TransactionDto, order_id) => {
     //
     //     let subsidy_status = new SubsidyUpdateDto(order_id, StatusEnum.NEVER, null, null);
@@ -228,14 +228,15 @@ export class TransactionSubsidyService {
 
 }
 
-export const generate_subsidy_batch_array = (begin_num, limit_num) => {
+export const clusters = (begin_num, limit_num) => {
 
+    const group_length = 100;
     const times_arr: Array<timesType> = [];
-    const times: number = Math.ceil(limit_num / 100);
+    const times: number = Math.ceil(limit_num / group_length);
 
     for (let i = 0; i < times; i++) {
-        const start = begin_num + i * 100;
-        const end = Math.min(start + 99, begin_num + limit_num - 1);
+        const start = begin_num + i * group_length;
+        const end = Math.min(start + (group_length - 1), begin_num + limit_num - 1);
         const counts = end - start + 1;
         times_arr.push({start, end, counts});
     }

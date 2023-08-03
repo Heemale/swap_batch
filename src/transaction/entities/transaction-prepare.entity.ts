@@ -4,22 +4,31 @@ import {
     PrimaryGeneratedColumn,
     JoinColumn, ManyToOne, Unique,
 } from 'typeorm';
-import {WalletEntity} from '../../wallet/entities/wallet.entity';
 import {AdminEntity} from "../../common/entity/admin.entity";
 import {StatusEnum} from "../../common/enum";
+import {TaskEntity} from "./task.entity";
 
 @Entity('fa_transaction_prepare')
 @Unique(['admin_id', 'admin_special_num'])
-export class TransactionApproveEntity extends AdminEntity {
+export class TransactionPrepareEntity extends AdminEntity {
 
     @PrimaryGeneratedColumn({comment: '准备记录ID'})
     id: number;
+
+    @Column({comment: '钱包起始编号', default: null, nullable: true})
+    begin_num: number;
+
+    @Column({comment: '钱包数量', default: null, nullable: true})
+    limit_num: number;
 
     @Column({comment: '打款gas数量', type: 'decimal', precision: 40, scale: 18, nullable: true})
     gas_amount: number;
 
     @Column({comment: '打款gas交易hash', default: null})
     gas_hash: string;
+
+    @Column({comment: '打款gas交易备注', default: null})
+    gas_remark: string;
 
     @Column({
         type: 'enum',
@@ -37,6 +46,9 @@ export class TransactionApproveEntity extends AdminEntity {
 
     @Column({comment: '打款token交易hash', default: null})
     token_hash: string;
+
+    @Column({comment: '打款token交易备注', default: null})
+    token_remark: string;
 
     @Column({
         type: 'enum',
@@ -57,8 +69,8 @@ export class TransactionApproveEntity extends AdminEntity {
     })
     approve_status: StatusEnum;
 
-    @ManyToOne(() => WalletEntity, (wallet) => wallet.approve_orders)
-    @JoinColumn({name: 'wallet_id'})
-    wallet: WalletEntity;
+    @ManyToOne(() => TaskEntity, (task) => task.prepare_orders)
+    @JoinColumn({name: 'task_id'})
+    task: TaskEntity;
 
 }
