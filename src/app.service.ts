@@ -1,7 +1,6 @@
 import {Injectable, Logger} from '@nestjs/common';
 import {Cron, CronExpression} from "@nestjs/schedule";
 import BigNumber from "bignumber.js";
-import {v4 as uuid} from 'uuid';
 
 import {TaskDao} from "./transaction/dao/task.dao";
 import {WalletDao} from "./wallet/dao/wallet.dao";
@@ -24,7 +23,7 @@ import {GetWalletDto} from "./wallet/dto/get-wallet.dto";
 import {StatusEnum, TaskStatus, TradeType, WalletSource} from "./common/enum";
 import {get_nonce, to_wei} from "./web3";
 import {env} from "./config";
-import {random, uint256_max} from "./common/util";
+import {random, timestamp, uint256_max} from "./common/util";
 import {TransferBatchDto} from "./web3/dto/transfer-batch.dto";
 import {TransactionDto} from "./web3/dto/transaction.dto";
 import {ApproveDto} from "./web3/dto/approve.dto";
@@ -57,13 +56,12 @@ export class AppService {
     private readonly update_env_logger = new Logger("定时任务：更新配置");
     private readonly monitor_task_swap_logger = new Logger("定时任务：根据task创建swap订单");
 
-    // 创建准备列表
-    // @Cron(CronExpression.EVERY_30_SECONDS)
-    async monitor_prepare_create() {
+
+    @Cron(CronExpression.EVERY_MINUTE)
+    async create_subsidy_approve() {
 
         // 读取任务列表
         const result = await this.taskDao.get(TaskStatus.NEVER);
-        // console.log("NEVER => ", result);
 
         // 遍历任务列表，调用create
         for (let i = 0; i < result.length; i++) {
@@ -80,7 +78,6 @@ export class AppService {
 
             let token_address = "";
             const spender = env.ROUTER_CONTRACT_ADDRESS;
-            const order_num = uuid();
 
             // 交易类型
             if (task.trade_type === TradeType.BUY) {
@@ -125,7 +122,7 @@ export class AppService {
             const approve_list = await this.transactionApproveDao.get_all();
 
             // 生成订单（授权）
-            const approve_order_list = generate_approve_order(approve_list, wallet_begin_num, wallet_limit_num, spender, [token_address], task_id);
+            const approve_order_list = generate_approve_order(approve_list, wallet_begin_num, wallet_limit_num, spender, [token_address], task_id, admin_id);
 
             // 创建订单（授权）
             await this.transactionApproveDao.create(approve_order_list);
@@ -134,16 +131,6 @@ export class AppService {
 
     };
 
-    /*
-    * 执行打款
-    *   获取tasks(打款中)
-    *   根据task_id查看打款记录
-    *       如果打款gas和打款token，全部完成
-    *           更新task状态
-    *           return
-    *       否则
-    *           遍历记录去打款，先提交打款gas打款，后打款token
-    * */
 
     // @Cron(CronExpression.EVERY_30_SECONDS)
     async execute_subsidy() {
@@ -225,65 +212,9 @@ export class AppService {
         }
     }
 
-    // 执行授权
-    // 获取tasks
-    // 遍历tasks
-    // 如果是task不是授权中，return
-    // 根据task_id查看打款记录
-    // 如果授权，全部完成
-    // 更新task状态
-    // return
-    // 否则
-    // 遍历记录去授权
-
-    // 创建swap记录
-
-    // 执行swap记录
-
-    // 创建归集记录
-
-    // 执行归集记录
-
-    // @Cron(CronExpression.EVERY_MINUTE)
-    // async monitor_subsidy_orders() {
-    //
-    //     this.monitor_subsidy_orders_logger.log("√");
-    //
-    //     // 获取订单
-    //     const order = await this.subsidyTransactionDao.get_wrong();
-    //     if (!order) return;
-    //
-    //     const {begin_num, limit_num, value_max, value_min, token_address, id: order_id} = order;
-    //
-    //     // 空投转账参数组装
-    //     const accounts = await this.addressDao
-    //         .get_address(begin_num, limit_num)
-    //         .then((list) => list.map((item) => item.address));
-    //     let amounts = []
-    //     let msg_value = new BigNumber(0);
-    //
-    //     for (let i = 0; i < accounts.length; i++) {
-    //         const amount = await to_wei(random(value_max.toString(), value_min.toString()));
-    //         amounts.push(amount);
-    //         if (token_address === '') {
-    //             msg_value = msg_value.plus(amount);
-    //         }
-    //     }
-    //
-    //     // 获取nonce
-    //     const nonce = await get_nonce(env.USER_ADDRESS);
-    //
-    //     const contract_address = token_address === '' ? env.TRANSFER_ETH_HELPER_ADDRESS : env.TRANSFER_HELPER_ADDRESS;
-    //     const transferBatchDto = new TransferBatchDto(accounts, amounts, token_address);
-    //     const transactionDto = new TransactionDto(env.USER_ADDRESS, contract_address, msg_value.valueOf(), '', env.PRIVATE_KEY, nonce);
-    //
-    //     // 提交交易
-    //     await this.subsidyTransactionService.subsidy(transferBatchDto, transactionDto, order_id);
-    // }
-
 
     // @Cron(CronExpression.EVERY_5_MINUTES)
-    async monitor_approve_orders() {
+    async execute_approve() {
 
         this.monitor_approve_orders_logger.log("√");
 
@@ -308,37 +239,89 @@ export class AppService {
     }
 
 
-
     // @Cron(CronExpression.EVERY_5_MINUTES)
-    // async monitor_collect_orders() {
-    //
-    //     this.monitor_collect_orders_logger.log("√");
-    //
-    //     // 获取订单
-    //     const orders = await this.collectTransactionDao.get_wrong();
-    //
-    //     // 批量提交
-    //     this.collectTransactionService.collect(orders);
-    // }
-    //
-    //
-    // @Cron(CronExpression.EVERY_MINUTE)
-    async monitor_swap_orders_never() {
+    async approve_process() {
 
-        this.monitor_swap_orders_never_logger.log("√");
-        // TODO 确保授权余额足够、token足够
-        // this.transactionService.execute_swap_order("never");
+        // 获取打款完成的task
+        const tasks = await this.taskDao.get(TaskStatus.PREPARE_DONE);
+
+        // 遍历tasks
+        for (let i = 0; i < tasks.length; i++) {
+
+            const task = tasks[i];
+            const {id: task_id, admin_id, wallet_begin_num, wallet_limit_num} = task;
+
+            let token_address = "";
+            const spender = env.ROUTER_CONTRACT_ADDRESS;
+
+            // 交易类型
+            if (task.trade_type === TradeType.BUY) {
+                token_address = task.trade_pair.token1_address;
+            } else if (task.trade_type === TradeType.SELL) {
+                token_address = task.trade_pair.token0_address;
+            } else {
+                continue;
+            }
+
+            // 获取【钱包】是否授权了【使用者】【指定token】使用权
+            const getWalletDto = new GetWalletDto(admin_id, wallet_begin_num, wallet_limit_num);
+            const success_counts = await this.transactionApproveDao.get_success_counts(getWalletDto);
+
+            // 如果 交易成功的数量 和 limit_num 一样，更改task为授权完成
+            if (success_counts === wallet_limit_num) await this.taskDao.update_status(task_id, TaskStatus.APPROVE_DONE);
+
+        }
+
     }
 
+
     // @Cron(CronExpression.EVERY_MINUTE)
-    // async monitor_swap_orders_failed() {
-    //
-    //     this.monitor_swap_orders_filed_logger.log("√");
-    //
-    //     this.transactionService.execute_swap_order("failed");
-    // }
-    //
-    //
+    async execute_swap_never() {
+        this.monitor_swap_orders_never_logger.log("√");
+        this.transactionService.execute_swap_order("never");
+    }
+
+
+    // @Cron(CronExpression.EVERY_MINUTE)
+    async execute_swap_failed() {
+        this.monitor_swap_orders_filed_logger.log("√");
+        this.transactionService.execute_swap_order("failed");
+    }
+
+
+    async create_collect() {
+        // 获取到达归集时间的task
+        const tasks = await this.taskDao.get(TaskStatus.PREPARE_DONE);
+
+        // 遍历tasks
+        for (let i = 0; i < tasks.length; i++) {
+            const task = tasks[i];
+            const {id: task_id, admin_id, wallet_begin_num, wallet_limit_num, collecttime} = task;
+
+            // 更改task为归集中
+            if (collecttime < timestamp()) await this.taskDao.update_status(task_id, TaskStatus.COLLECT_ING);
+
+            // 创建归集记录
+            // TODO 修改
+            // this.collectTransactionService.create_collect_order();
+
+        }
+    }
+
+
+    // @Cron(CronExpression.EVERY_5_MINUTES)
+    async execute_collect() {
+
+        this.monitor_collect_orders_logger.log("√");
+
+        // 获取订单
+        const orders = await this.collectTransactionDao.get_wrong();
+
+        // 批量提交
+        // this.collectTransactionService.collect(orders);
+    }
+
+
     // @Cron(CronExpression.EVERY_MINUTE)
     // async update_env() {
     //

@@ -16,10 +16,11 @@ export enum TaskStatus {
     NEVER = '0', //未执行
     PREPARE_ING = '1', // 准备中
     PREPARE_DONE = '2', // 准备完毕
-    SWAP_ING = '3', // swap中
-    SWAP_DONE = '4', // swap完毕
-    COLLECT_ING = '5', // 归集中
-    COLLECT_DONE = '6', // 归集完毕
+    APPROVE_DONE = '3', // 授权完毕
+    SWAP_ING = '4', // swap中
+    SWAP_DONE = '5', // swap完毕
+    COLLECT_ING = '6', // 归集中
+    COLLECT_DONE = '7', // 归集完毕
 }
 
 export enum WalletSource {

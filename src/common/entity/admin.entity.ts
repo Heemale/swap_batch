@@ -6,7 +6,7 @@ export class AdminEntity extends BaseEntity {
     @Column({comment: '管理员ID'})
     admin_id: number;
 
-    @Column({comment: '编号'})
+    @Column({comment: '编号', default: null})
     admin_special_num: number;
 
 }

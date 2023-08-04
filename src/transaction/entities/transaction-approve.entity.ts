@@ -10,7 +10,6 @@ import {TaskEntity} from "./task.entity";
 
 @Entity('fa_transaction_approve')
 @Unique('unique_token_wallet', ['token_address', 'wallet'])
-@Unique(['admin_id', 'admin_special_num'])
 export class TransactionApproveEntity extends TransactionEntity {
 
     @PrimaryGeneratedColumn({comment: '授权记录ID'})

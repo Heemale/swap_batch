@@ -38,32 +38,32 @@ export class TransactionSubsidyService {
     ) {
     }
 
-    create_subsidy_approve_order = async (subsidyApproveBatchDto: SubsidyApproveBatchDto) => {
-
-        const {begin_num, limit_num, value_max, value_min, spender, token_addresses} = subsidyApproveBatchDto;
-        const token_address: string = "";
-        const order_num = uuid();
-
-        // 生成批次数组
-        const times_arr = clusters(begin_num, limit_num);
-
-        // 生成订单（打款）
-        const subsidy_order_list = generate_subsidy_order(times_arr, order_num, value_max, value_min, token_address);
-
-        // 创建订单（打款）
-        await this.transactionSubsidyDao.create(subsidy_order_list);
-
-        // 获取所有记录（授权）
-        const approve_list = await this.transactionApproveDao.get_all();
-
-        // 生成订单（授权）
-        const approve_order_list = generate_approve_order(approve_list, begin_num, limit_num, spender, token_addresses, order_num);
-
-        // 创建订单（授权）
-        await this.transactionApproveDao.create(approve_order_list);
-
-        return "已提交";
-    }
+    // create_subsidy_approve_order = async (subsidyApproveBatchDto: SubsidyApproveBatchDto) => {
+    //
+    //     const {begin_num, limit_num, value_max, value_min, spender, token_addresses} = subsidyApproveBatchDto;
+    //     const token_address: string = "";
+    //     const order_num = uuid();
+    //
+    //     // 生成批次数组
+    //     const times_arr = clusters(begin_num, limit_num);
+    //
+    //     // 生成订单（打款）
+    //     const subsidy_order_list = generate_subsidy_order(times_arr, order_num, value_max, value_min, token_address);
+    //
+    //     // 创建订单（打款）
+    //     await this.transactionSubsidyDao.create(subsidy_order_list);
+    //
+    //     // 获取所有记录（授权）
+    //     const approve_list = await this.transactionApproveDao.get_all();
+    //
+    //     // 生成订单（授权）
+    //     const approve_order_list = generate_approve_order(approve_list, begin_num, limit_num, spender, token_addresses, order_num);
+    //
+    //     // 创建订单（授权）
+    //     await this.transactionApproveDao.create(approve_order_list);
+    //
+    //     return "已提交";
+    // }
 
     // create_subsidy_swap_order = async (subsidySwapBatchDto: SubsidySwapBatchDto) => {
     //
@@ -257,7 +257,7 @@ export const generate_subsidy_order = (times_arr, order_num, value_max, value_mi
     return subsidy_order_list;
 }
 
-export const generate_approve_order = (approve_list, begin_num, limit_num, spender, token_addresses, task_id) => {
+export const generate_approve_order = (approve_list, begin_num, limit_num, spender, token_addresses, task_id, admin_id) => {
 
     // <哪些机器人> 已授权 <哪些token>
     const approved_mapping: { [key: number]: string[] } = {};
@@ -281,7 +281,7 @@ export const generate_approve_order = (approve_list, begin_num, limit_num, spend
             const wallet_id = input_array[j];
             if (!(wallet_id in approved_mapping) || approved_mapping[wallet_id].indexOf(token_address) == -1) {
                 approve_order_list.push({
-                    task_id, wallet: wallet_id, spender, token_address, createtime: timestamp(),
+                    task: task_id, admin_id, wallet: wallet_id, spender, token_address, createtime: timestamp(),
                 });
             }
         }

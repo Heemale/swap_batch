@@ -5,6 +5,8 @@ import {timestamp} from '../../common/util';
 import {TransactionApproveEntity} from '../entities/transaction-approve.entity';
 import {ApproveUpdateDto} from '../dto/approve/approve-update.dto';
 import {StatusEnum} from "../../common/enum";
+import {WalletEntity} from "../../wallet/entities/wallet.entity";
+import {GetWalletDto} from "../../wallet/dto/get-wallet.dto";
 
 @Injectable()
 export class TransactionApproveDao {
@@ -25,6 +27,7 @@ export class TransactionApproveDao {
                 .values(order_list)
                 .execute();
         } catch (e) {
+            console.log('TransactionApprove 写入失败', e.message);
             return e;
         }
 
@@ -76,6 +79,21 @@ export class TransactionApproveDao {
             .createQueryBuilder('approve_orders')
             .leftJoinAndSelect('approve_orders.wallet', 'wallet')
             .getMany();
+    }
+
+    async get_success_counts(getWalletDto: GetWalletDto) {
+
+        const {admin_id, begin_num, limit_num} = getWalletDto;
+
+        // 有问题
+        return await this.dataSource.getRepository(TransactionApproveEntity)
+            .createQueryBuilder('approve_orders')
+            .leftJoinAndSelect('approve_orders.wallet', 'wallet')
+            .where('approve_orders.wallet.admin_id = :admin_id', {admin_id})
+            .andWhere('approve_orders.wallet.admin_wallet_num >= :begin_num', {begin_num})
+            .andWhere('status = :status', {status: StatusEnum.CHECK_SUCCESS})
+            .limit(limit_num)
+            .getCount();
     }
 
 }
