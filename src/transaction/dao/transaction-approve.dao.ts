@@ -5,7 +5,6 @@ import {timestamp} from '../../common/util';
 import {TransactionApproveEntity} from '../entities/transaction-approve.entity';
 import {ApproveUpdateDto} from '../dto/approve/approve-update.dto';
 import {StatusEnum} from "../../common/enum";
-import {WalletEntity} from "../../wallet/entities/wallet.entity";
 import {GetWalletDto} from "../../wallet/dto/get-wallet.dto";
 
 @Injectable()
@@ -63,11 +62,10 @@ export class TransactionApproveDao {
     }
 
     async get_wrong() {
-        // TODO 左联 task_判断是否打款完毕，打款完毕再去授权
         return await this.dataSource.getRepository(TransactionApproveEntity)
             .createQueryBuilder('approve_orders')
             .leftJoinAndSelect('approve_orders.wallet', 'wallet')
-            .where('(status = :status1 OR status = :status2)', {
+            .where('(approve_orders.status = :status1 OR approve_orders.status = :status2)', {
                 status1: StatusEnum.NEVER,
                 status2: StatusEnum.FAILURE
             })
@@ -91,7 +89,7 @@ export class TransactionApproveDao {
             .createQueryBuilder('approve_orders')
             .leftJoinAndSelect('approve_orders.wallet', 'wallet')
             .where('approve_orders.wallet.admin_id = :admin_id', {admin_id})
-            .andWhere('status = :status', {status: StatusEnum.CHECK_SUCCESS})
+            .andWhere('approve_orders.status = :status', {status: StatusEnum.CHECK_SUCCESS})
             .andWhere('approve_orders.wallet.admin_wallet_num >= :begin_num', {begin_num})
             .limit(limit_num)
             .getCount();

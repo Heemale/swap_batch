@@ -3,7 +3,7 @@ import {format_timestamp, timestamp} from "../../../../common/util";
 
 export class SwapBatchDto {
 
-    constructor(disposable_switch: number, dense_switch: number, range_switch: number, rangestarttime: string, rangeendtime: string, begin_num: number, limit_num: number, max_num: number, min_num: number, token_in: string, token_out: string, times: number, task_id: number) {
+    constructor(disposable_switch: number, dense_switch: number, range_switch: number, rangestarttime: number, rangeendtime: number, begin_num: number, limit_num: number, max_num: number, min_num: number, token_in: string, token_out: string, times: number, task_id: number) {
         this.disposable_switch = disposable_switch;
         this.dense_switch = dense_switch;
         this.range_switch = range_switch;
@@ -28,11 +28,11 @@ export class SwapBatchDto {
     @ApiProperty({description: '是否区间交易:0=否,1=是', default: 1, example: 1})
     readonly range_switch: number;
 
-    @ApiProperty({description: '区间起始时间', example: format_timestamp(timestamp())})
-    readonly rangestarttime: string;
+    @ApiProperty({description: '区间起始时间'})
+    readonly rangestarttime: number;
 
-    @ApiProperty({description: '区间结束时间', example: format_timestamp(timestamp() + 3600 * 4)})
-    readonly rangeendtime: string;
+    @ApiProperty({description: '区间结束时间'})
+    readonly rangeendtime: number;
 
     @ApiProperty({description: '起始编号', default: 1, example: 1})
     readonly begin_num: number;
