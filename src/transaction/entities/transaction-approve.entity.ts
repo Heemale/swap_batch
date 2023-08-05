@@ -5,12 +5,12 @@ import {
     JoinColumn, ManyToOne, Unique,
 } from 'typeorm';
 import {WalletEntity} from '../../wallet/entities/wallet.entity';
-import {TransactionEntity} from "../../common/entity/transaction.entity";
+import {TransactionBaseEntity} from "../../common/entity/transaction-base.entity";
 import {TaskEntity} from "./task.entity";
 
 @Entity('fa_transaction_approve')
 @Unique('unique_token_wallet', ['token_address', 'wallet'])
-export class TransactionApproveEntity extends TransactionEntity {
+export class TransactionApproveEntity extends TransactionBaseEntity {
 
     @PrimaryGeneratedColumn({comment: '授权记录ID'})
     id: number;

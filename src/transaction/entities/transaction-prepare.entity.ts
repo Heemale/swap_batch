@@ -4,13 +4,12 @@ import {
     PrimaryGeneratedColumn,
     JoinColumn, ManyToOne, Unique,
 } from 'typeorm';
-import {AdminEntity} from "../../common/entity/admin.entity";
+import {AdminBaseEntity} from "../../common/entity/admin-base.entity";
 import {StatusEnum} from "../../common/enum";
 import {TaskEntity} from "./task.entity";
 
 @Entity('fa_transaction_prepare')
-@Unique(['admin_id', 'admin_special_num'])
-export class TransactionPrepareEntity extends AdminEntity {
+export class TransactionPrepareEntity extends AdminBaseEntity {
 
     @PrimaryGeneratedColumn({comment: '准备记录ID'})
     id: number;
@@ -57,17 +56,6 @@ export class TransactionPrepareEntity extends AdminEntity {
         comment: '打款token状态:0=未交易,1=待交易,2=交易失败,3=待核验,4=核验失败,5=校验成功',
     })
     token_status: StatusEnum;
-
-    @Column({comment: '使用人地址'})
-    spender: string;
-
-    @Column({
-        type: 'enum',
-        enum: StatusEnum,
-        default: StatusEnum.NEVER,
-        comment: '授权状态:0=未交易,1=待交易,2=交易失败,3=待核验,4=核验失败,5=校验成功',
-    })
-    approve_status: StatusEnum;
 
     @ManyToOne(() => TaskEntity, (task) => task.prepare_orders)
     @JoinColumn({name: 'task_id'})

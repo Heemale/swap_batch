@@ -24,6 +24,7 @@ import {SwapUpdateDto} from './dto/swap/swap-update.dto';
 import {TaskDao} from "./dao/task.dao";
 import {GetAmountsOutDto} from "../web3/dto/get-amounts-out.dto";
 import {WalletDao} from "../wallet/dao/wallet.dao";
+import {GetWalletDto} from "../wallet/dto/get-wallet.dto";
 
 export const Web3 = require('web3');
 
@@ -100,111 +101,114 @@ export class TransactionService {
     //     return '执行成功';
     // }
 
-    // create_swap_order = async (swapBatchDto: SwapBatchDto) => {
-    //
-    //     if (env.SWAP_SWITCH === "0") {
-    //         throw new HttpException("swap总开关关闭", 400);
-    //     } else {
-    //         if (env.SWAP_SWITCH !== "1") throw new HttpException("swap开关异常", 400);
-    //     }
-    //
-    //     let {
-    //         disposable_switch,
-    //         dense_switch,
-    //         range_switch,
-    //         rangestarttime,
-    //         rangeendtime,
-    //         begin_num,
-    //         limit_num,
-    //         max_num,
-    //         min_num,
-    //         token_in,
-    //         token_out,
-    //         times,
-    //         task_id
-    //     } = swapBatchDto;
-    //
-    //     if (times <= 0) throw new HttpException("参数times错误", 400);
-    //
-    //     const order_num = uuid();
-    //
-    //     // 获取用户
-    //     const users = await this.walletDao.get_address(begin_num, limit_num);
-    //
-    //     // 生成订单（swap）
-    //     let order_list = [];
-    //
-    //     // 如果是区间交易
-    //     if (range_switch === 1) {
-    //
-    //         let _rangestarttime;
-    //         let _rangeendtime;
-    //         try {
-    //             _rangestarttime = convert_to_timestamp(rangestarttime);
-    //             _rangeendtime = convert_to_timestamp(rangeendtime);
-    //         } catch (err) {
-    //             throw new HttpException("区间时间格式错误", 400);
-    //         }
-    //
-    //         // 获取随机时间、排序
-    //         const random_times = [];
-    //         for (let i = 0; i < users.length * times; i++) {
-    //             random_times.push(get_random(_rangestarttime, _rangeendtime));
-    //         }
-    //         random_times.sort((a, b) => a - b);
-    //
-    //         for (let i = 0; i < times; i++) {
-    //             for (let j = 0; j < users.length; j++) {
-    //                 const item = users[j];
-    //                 order_list.push(new SwapCreateDto(order_num, item.id, task_id, i + 1, 0, random_times[users.length * i + j], _rangestarttime, _rangeendtime, get_random(min_num, max_num), token_in, token_out, timestamp()));
-    //             }
-    //         }
-    //
-    //     } else {
-    //         // 设置interval的对象
-    //         let interval_map = {};
-    //
-    //         // 获取swap记录中最大的时间戳
-    //         const last_record = await this.transactionSwapDao.get_last_time();
-    //         let total_interval = parseInt(String(last_record?.executetime));
-    //         if (isNaN(total_interval)) total_interval = timestamp();
-    //
-    //         for (let i = 0; i < times; i++) {
-    //
-    //             for (let j = 0; j < users.length; j++) {
-    //                 const item = users[j];
-    //
-    //                 if (interval_map[item.id] === undefined) {
-    //                     interval_map[item.id] = get_random(item.interval_min, item.interval_max);
-    //                 } else {
-    //                     interval_map[item.id] += get_random(item.interval_min, item.interval_max);
-    //                 }
-    //
-    //                 let executetime = 0;
-    //                 if (dense_switch === 0) {
-    //                     total_interval = total_interval + interval_map[item.id] * 60;
-    //                     executetime = total_interval;
-    //                 } else if (dense_switch === 1) {
-    //                     executetime = timestamp() + interval_map[item.id] * 60;
-    //                 } else {
-    //                     throw new HttpException("dense_switch 参数错诶，请填写0或者1", 400);
-    //                 }
-    //
-    //                 order_list.push(new SwapCreateDto(order_num, item.id, task_id, i + 1, interval_map[item.id], executetime, null, null, get_random(min_num, max_num), token_in, token_out, timestamp()));
-    //             }
-    //         }
-    //     }
-    //
-    //     // 创建订单（swap）
-    //     await this.transactionSwapDao.create(order_list);
-    //
-    //     // 如果是一次性任务 且 task_id 不为 null，提交后修改一次性交易执行时间
-    //     if (disposable_switch === 1 && task_id) {
-    //         await this.taskDao.update_disposabletime(task_id);
-    //     }
-    //
-    //     return '创建排程的订单已提交';
-    // }
+    // TODO 修改
+    create_swap_order = async (swapBatchDto: SwapBatchDto) => {
+
+        if (env.SWAP_SWITCH === "0") {
+            throw new HttpException("swap总开关关闭", 400);
+        } else {
+            if (env.SWAP_SWITCH !== "1") throw new HttpException("swap开关异常", 400);
+        }
+
+        let {
+            disposable_switch,
+            dense_switch,
+            range_switch,
+            rangestarttime,
+            rangeendtime,
+            begin_num,
+            limit_num,
+            max_num,
+            min_num,
+            token_in,
+            token_out,
+            times,
+            task_id
+        } = swapBatchDto;
+
+        if (times <= 0) throw new HttpException("参数times错误", 400);
+
+        const order_num = uuid();
+
+        // 获取用户
+        const admin_id = 1;
+        const getWalletDto = new GetWalletDto(admin_id, begin_num, limit_num);
+        const users = await this.walletDao.get_address(getWalletDto);
+
+        // 生成订单（swap）
+        let order_list = [];
+
+        // 如果是区间交易
+        if (range_switch === 1) {
+
+            let _rangestarttime;
+            let _rangeendtime;
+            try {
+                _rangestarttime = convert_to_timestamp(rangestarttime);
+                _rangeendtime = convert_to_timestamp(rangeendtime);
+            } catch (err) {
+                throw new HttpException("区间时间格式错误", 400);
+            }
+
+            // 获取随机时间、排序
+            const random_times = [];
+            for (let i = 0; i < users.length * times; i++) {
+                random_times.push(get_random(_rangestarttime, _rangeendtime));
+            }
+            random_times.sort((a, b) => a - b);
+
+            for (let i = 0; i < times; i++) {
+                for (let j = 0; j < users.length; j++) {
+                    const item = users[j];
+                    order_list.push(new SwapCreateDto(order_num, item.id, task_id, i + 1, 0, random_times[users.length * i + j], _rangestarttime, _rangeendtime, get_random(min_num, max_num), token_in, token_out, timestamp()));
+                }
+            }
+
+        } else {
+            // 设置interval的对象
+            let interval_map = {};
+
+            // 获取swap记录中最大的时间戳
+            const last_record = await this.transactionSwapDao.get_last_time();
+            let total_interval = parseInt(String(last_record?.executetime));
+            if (isNaN(total_interval)) total_interval = timestamp();
+
+            for (let i = 0; i < times; i++) {
+
+                for (let j = 0; j < users.length; j++) {
+                    const item = users[j];
+
+                    if (interval_map[item.id] === undefined) {
+                        interval_map[item.id] = get_random(item.interval_min, item.interval_max);
+                    } else {
+                        interval_map[item.id] += get_random(item.interval_min, item.interval_max);
+                    }
+
+                    let executetime = 0;
+                    if (dense_switch === 0) {
+                        total_interval = total_interval + interval_map[item.id] * 60;
+                        executetime = total_interval;
+                    } else if (dense_switch === 1) {
+                        executetime = timestamp() + interval_map[item.id] * 60;
+                    } else {
+                        throw new HttpException("dense_switch 参数错诶，请填写0或者1", 400);
+                    }
+
+                    order_list.push(new SwapCreateDto(order_num, item.id, task_id, i + 1, interval_map[item.id], executetime, null, null, get_random(min_num, max_num), token_in, token_out, timestamp()));
+                }
+            }
+        }
+
+        // 创建订单（swap）
+        await this.transactionSwapDao.create(order_list);
+
+        // 如果是一次性任务 且 task_id 不为 null，提交后修改一次性交易执行时间
+        if (disposable_switch === 1 && task_id) {
+            await this.taskDao.update_disposabletime(task_id);
+        }
+
+        return '创建排程的订单已提交';
+    }
 
     execute_swap_order = async (type: "never" | "failed") => {
 

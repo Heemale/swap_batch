@@ -3,11 +3,10 @@ import {
     Column,
     PrimaryGeneratedColumn, Unique,
 } from 'typeorm';
-import {TransactionEntity} from "../../common/entity/transaction.entity";
+import {TransactionBaseEntity} from "../../common/entity/transaction-base.entity";
 
 @Entity('fa_transaction_approve_admin')
-@Unique(['admin_id', 'admin_special_num'])
-export class TransactionApproveAdminEntity extends TransactionEntity {
+export class TransactionApproveAdminEntity extends TransactionBaseEntity {
 
     @PrimaryGeneratedColumn({comment: '授权记录ID'})
     id: number;

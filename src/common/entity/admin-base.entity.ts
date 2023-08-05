@@ -1,12 +1,9 @@
 import {Column} from 'typeorm';
 import {BaseEntity} from "./base.entity";
 
-export class AdminEntity extends BaseEntity {
+export class AdminBaseEntity extends BaseEntity {
 
     @Column({comment: '管理员ID'})
     admin_id: number;
-
-    @Column({comment: '编号', default: null})
-    admin_special_num: number;
 
 }

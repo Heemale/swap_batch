@@ -24,6 +24,7 @@ import {WalletEntity} from "../wallet/entities/wallet.entity";
 import {TransactionPrepareEntity} from "./entities/transaction-prepare.entity";
 import {TransactionPrepareService} from "./transaction-prepare.service";
 import {TransactionPrepareDao} from "./dao/transaction-prepare.dao";
+import {AdminEntity} from "./entities/admin.entity";
 
 @Module({
     imports: [
@@ -38,6 +39,7 @@ import {TransactionPrepareDao} from "./dao/transaction-prepare.dao";
             TradePairEntity,
             AdminTradePairEntity,
             TransactionPrepareEntity,
+            AdminEntity
         ]),
     ],
     controllers: [TransactionController],

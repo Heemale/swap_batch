@@ -6,11 +6,10 @@ import {
     JoinColumn, Unique,
 } from 'typeorm';
 import {WalletEntity} from '../../wallet/entities/wallet.entity';
-import {TransactionEntity} from "../../common/entity/transaction.entity";
+import {TransactionBaseEntity} from "../../common/entity/transaction-base.entity";
 
 @Entity('fa_transaction_collect')
-@Unique(['admin_id', 'admin_special_num'])
-export class TransactionCollectEntity extends TransactionEntity {
+export class TransactionCollectEntity extends TransactionBaseEntity {
 
     @PrimaryGeneratedColumn({comment: '归集记录ID'})
     id: number;

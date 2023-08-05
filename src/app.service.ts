@@ -48,33 +48,35 @@ export class AppService {
     ) {
     }
 
-    private readonly monitor_subsidy_orders_logger = new Logger("定时任务：打款");
-    private readonly monitor_approve_orders_logger = new Logger("定时任务：授权");
-    private readonly monitor_collect_orders_logger = new Logger("定时任务：归集");
-    private readonly monitor_swap_orders_never_logger = new Logger("定时任务：swap_never");
-    private readonly monitor_swap_orders_filed_logger = new Logger("定时任务：swap_filed");
+    private readonly create_subsidy_approve_logger = new Logger("定时任务：创建打款和授权");
+    private readonly execute_subsidy_logger = new Logger("定时任务：执行打款");
+    private readonly execute_approve_logger = new Logger("定时任务：执行授权");
+    private readonly approve_process_logger = new Logger("定时任务：更新task授权进度");
+    private readonly execute_swap_never_logger = new Logger("定时任务：执行swap_never");
+    private readonly execute_swap_failed_logger = new Logger("定时任务：执行swap_filed");
+    private readonly create_collect_logger = new Logger("定时任务：创建归集");
+    private readonly execute_collect_logger = new Logger("定时任务：执行归集");
     private readonly update_env_logger = new Logger("定时任务：更新配置");
-    private readonly monitor_task_swap_logger = new Logger("定时任务：根据task创建swap订单");
 
 
     @Cron(CronExpression.EVERY_MINUTE)
     async create_subsidy_approve() {
 
-        // 读取任务列表
-        const result = await this.taskDao.get(TaskStatus.NEVER);
+        // 获取未执行的task
+        const tasks = await this.taskDao.get(TaskStatus.NEVER);
 
-        // 遍历任务列表，调用create
-        for (let i = 0; i < result.length; i++) {
+        // 遍历tasks
+        for (let i = 0; i < tasks.length; i++) {
 
-            const task = result[i];
+            const task = tasks[i];
             const {
                 id: task_id,
-                admin_id,
                 wallet_source,
                 wallet_create_counts,
                 wallet_begin_num,
                 wallet_limit_num
             } = task;
+            const {id: admin_id} = task.admin;
 
             let token_address = "";
             const spender = env.ROUTER_CONTRACT_ADDRESS;
@@ -94,9 +96,9 @@ export class AppService {
             if (wallet_source === WalletSource.CREATE) {
                 // 创建钱包
                 const createWalletBatchDto = new CreateWalletBatchDto(admin_id, task_id, wallet_create_counts);
-                const wallet_data = await this.walletService.create(createWalletBatchDto);
-                begin_num = wallet_data.begin_num;
-                limit_num = wallet_data.limit_num;
+                const result = await this.walletService.create(createWalletBatchDto);
+                begin_num = result.begin_num;
+                limit_num = result.limit_num;
             } else if (wallet_source === WalletSource.PICK) {
                 // 选择钱包
                 begin_num = wallet_begin_num;
@@ -109,14 +111,11 @@ export class AppService {
             // 分组
             const times_arr = clusters(begin_num, limit_num);
 
-            // 更改状态（任务）
+            // 更改task为准备中
             await this.taskDao.update_status(task_id, TaskStatus.PREPARE_ING);
 
-            // 获取admin_special_num_max
-            const admin_special_num_max = await this.transactionPrepareDao.get_admin_special_num_max(admin_id);
-
             // 创建订单（准备）
-            await this.transactionPrepareService.create(task_id, admin_id, admin_special_num_max, times_arr, token_address);
+            await this.transactionPrepareService.create(task_id, admin_id, times_arr, token_address);
 
             // 获取所有记录（授权）
             const approve_list = await this.transactionApproveDao.get_all();
@@ -137,29 +136,37 @@ export class AppService {
 
         // 读取任务列表
         const result = await this.taskDao.get(TaskStatus.PREPARE_ING);
-        // console.log("PREPARE_ING => ", result);
 
+        // TODO 不需要查两次表:task和prepare，改transactionPrepareDao，左联task，根据admin来group即可
+
+        // nonce_mapping
+        const nonce_mapping: { [key: string]: bigint } = {};
+
+        // 遍历tasks
         for (let i = 0; i < result.length; i++) {
             const task = result[i];
             const {
                 id: task_id,
-                admin_id,
                 subsidy_gas_max,
                 subsidy_gas_min,
                 subsidy_token_max,
                 subsidy_token_min,
             } = task;
+            const {id: admin_id, admin_address, admin_private_key} = task.admin;
 
             // 获取打款列表
             const prepare_list = await this.transactionPrepareDao.get(task_id);
 
-            // 如果prepare_list长度为0 ...
+            // 如果prepare_list长度为0，更改task为打款完成，进入下一次循环
             if (prepare_list.length === 0) {
                 await this.taskDao.update_status(task_id, TaskStatus.PREPARE_DONE);
                 continue;
             }
 
-            // TODO nonce prepare_list每次循环，admin对应的nonce++
+            // 如果未查询过nonce
+            if (!(admin_address.toLowerCase() in nonce_mapping)) {
+                nonce_mapping[admin_address.toLowerCase()] = await get_nonce(admin_address);
+            }
 
             for (let j = 0; j < prepare_list.length; j++) {
 
@@ -167,17 +174,11 @@ export class AppService {
                 const getWalletDto = new GetWalletDto(admin_id, begin_num, limit_num);
 
                 // 空投转账参数组装
-                const accounts: Array<string> = await this.walletDao
-                    .get_address(getWalletDto)
-                    .then((list) => list.map((item) => item.address));
+                const accounts: Array<string> = await this.walletDao.get_address(getWalletDto).then((list) => list.map((item) => item.address));
                 const amounts: Array<string> = [];
                 let msg_value = new BigNumber(0);
                 let contract_address = "";
                 let transferBatchDto;
-
-                // TODO admin_id nonce 问题
-                // 获取nonce
-                const nonce = await get_nonce(env.USER_ADDRESS);
 
                 if (gas_status === StatusEnum.NEVER || gas_status === StatusEnum.FAILURE) {
 
@@ -202,11 +203,10 @@ export class AppService {
 
                 }
 
-                // TODO
-                const transactionDto = new TransactionDto(env.USER_ADDRESS, contract_address, msg_value.valueOf(), '', env.PRIVATE_KEY, nonce);
+                const transactionDto = new TransactionDto(admin_address, contract_address, msg_value.valueOf(), '', admin_private_key, nonce_mapping[admin_address.toLowerCase()]++);
 
                 // 提交交易
-                await this.subsidyTransactionService.subsidy(transferBatchDto, transactionDto, id);
+                this.subsidyTransactionService.subsidy(transferBatchDto, transactionDto, id);
             }
 
         }
@@ -216,7 +216,7 @@ export class AppService {
     // @Cron(CronExpression.EVERY_5_MINUTES)
     async execute_approve() {
 
-        this.monitor_approve_orders_logger.log("√");
+        this.execute_approve_logger.log("√");
 
         // 获取订单
         const orders = await this.transactionApproveDao.get_wrong();
@@ -225,9 +225,6 @@ export class AppService {
         orders.map(async (item) => {
 
             const {id: order_id, token_address, spender} = item;
-
-            // TODO 有gas就去授权
-
             const nonce = await get_nonce(item.wallet.address);
             const approveDto = new ApproveDto(spender, uint256_max, token_address);
             const transactionDto = new TransactionDto(item.wallet.address, token_address, new BigNumber(0).valueOf(), '', item.wallet.private_key, nonce);
@@ -239,6 +236,7 @@ export class AppService {
     }
 
 
+    // TODO 如果按照 打款完毕 再授权 （虽然会慢一点） 那不需要这个方法了
     // @Cron(CronExpression.EVERY_5_MINUTES)
     async approve_process() {
 
@@ -249,7 +247,8 @@ export class AppService {
         for (let i = 0; i < tasks.length; i++) {
 
             const task = tasks[i];
-            const {id: task_id, admin_id, wallet_begin_num, wallet_limit_num} = task;
+            const {id: task_id, wallet_begin_num, wallet_limit_num} = task;
+            const {id: admin_id} = task.admin;
 
             let token_address = "";
             const spender = env.ROUTER_CONTRACT_ADDRESS;
@@ -275,16 +274,21 @@ export class AppService {
     }
 
 
+    async create_swap_never() {
+
+    }
+
+
     // @Cron(CronExpression.EVERY_MINUTE)
     async execute_swap_never() {
-        this.monitor_swap_orders_never_logger.log("√");
+        this.execute_swap_never_logger.log("√");
         this.transactionService.execute_swap_order("never");
     }
 
 
     // @Cron(CronExpression.EVERY_MINUTE)
     async execute_swap_failed() {
-        this.monitor_swap_orders_filed_logger.log("√");
+        this.execute_swap_failed_logger.log("√");
         this.transactionService.execute_swap_order("failed");
     }
 
@@ -296,13 +300,13 @@ export class AppService {
         // 遍历tasks
         for (let i = 0; i < tasks.length; i++) {
             const task = tasks[i];
-            const {id: task_id, admin_id, wallet_begin_num, wallet_limit_num, collecttime} = task;
+            const {id: task_id, wallet_begin_num, wallet_limit_num, collecttime} = task;
+            const {id: admin_id} = task.admin;
 
             // 更改task为归集中
             if (collecttime < timestamp()) await this.taskDao.update_status(task_id, TaskStatus.COLLECT_ING);
 
             // 创建归集记录
-            // TODO 修改
             // this.collectTransactionService.create_collect_order();
 
         }
@@ -312,7 +316,7 @@ export class AppService {
     // @Cron(CronExpression.EVERY_5_MINUTES)
     async execute_collect() {
 
-        this.monitor_collect_orders_logger.log("√");
+        this.execute_collect_logger.log("√");
 
         // 获取订单
         const orders = await this.collectTransactionDao.get_wrong();

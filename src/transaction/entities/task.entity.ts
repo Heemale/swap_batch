@@ -1,18 +1,21 @@
 import {Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, Unique} from 'typeorm';
 import {TransactionSwapEntity} from './transaction-swap.entity';
 import {TaskStatus, TradeType, WalletSource} from "../../common/enum";
-import {AdminEntity} from "../../common/entity/admin.entity";
 import {TradePairEntity} from "./trade-pair.entity";
 import {TransactionPrepareEntity} from "./transaction-prepare.entity";
 import {WalletEntity} from "../../wallet/entities/wallet.entity";
 import {TransactionApproveEntity} from "./transaction-approve.entity";
+import {AdminEntity} from "./admin.entity";
+import {BaseEntity} from "../../common/entity/base.entity";
 
 @Entity('fa_task')
-@Unique(['admin_id', 'admin_special_num'])
-export class TaskEntity extends AdminEntity {
+export class TaskEntity extends BaseEntity {
 
     @PrimaryGeneratedColumn({comment: 'swap任务ID'})
     id: number;
+
+    @Column({comment: '订单号', default: null, nullable: true})
+    order_num: string;
 
     @Column({comment: '任务是否启动', type: 'tinyint', default: 0, nullable: false})
     swap_switch: number;
@@ -115,6 +118,10 @@ export class TaskEntity extends AdminEntity {
 
     @OneToMany(() => TransactionSwapEntity, (swap_order) => swap_order.task)
     swap_orders: TransactionSwapEntity[];
+
+    @ManyToOne(() => AdminEntity, (admin) => admin.tasks)
+    @JoinColumn({name: 'admin_id'})
+    admin: AdminEntity;
 
     @ManyToOne(() => TradePairEntity, (trade_pair) => trade_pair.tasks)
     @JoinColumn({name: 'task_pair_id'})

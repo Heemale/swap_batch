@@ -2,19 +2,18 @@ import {Entity, Column, PrimaryGeneratedColumn, OneToMany, Unique, ManyToOne, Jo
 import {TransactionSwapEntity} from '../../transaction/entities/transaction-swap.entity';
 import {TransactionApproveEntity} from '../../transaction/entities/transaction-approve.entity';
 import {TransactionCollectEntity} from "../../transaction/entities/transaction-collect.entity";
-import {AdminEntity} from "../../common/entity/admin.entity";
-import {TransactionPrepareEntity} from "../../transaction/entities/transaction-prepare.entity";
+import {AdminBaseEntity} from "../../common/entity/admin-base.entity";
 import {TaskEntity} from "../../transaction/entities/task.entity";
 
 @Entity('fa_wallet')
 @Unique(['admin_id', 'admin_special_num'])
-export class WalletEntity extends AdminEntity {
+export class WalletEntity extends AdminBaseEntity {
 
     @PrimaryGeneratedColumn({comment: '钱包ID'})
     id: number;
 
-    @Column({comment: '来源任务ID', nullable: true})
-    task_id: number;
+    @Column({comment: '编号'})
+    admin_special_num: number;
 
     @Column({comment: '地址', nullable: true})
     address: string;

@@ -63,6 +63,7 @@ export class TransactionApproveDao {
     }
 
     async get_wrong() {
+        // TODO 左联 task_判断是否打款完毕，打款完毕再去授权
         return await this.dataSource.getRepository(TransactionApproveEntity)
             .createQueryBuilder('approve_orders')
             .leftJoinAndSelect('approve_orders.wallet', 'wallet')
@@ -90,8 +91,8 @@ export class TransactionApproveDao {
             .createQueryBuilder('approve_orders')
             .leftJoinAndSelect('approve_orders.wallet', 'wallet')
             .where('approve_orders.wallet.admin_id = :admin_id', {admin_id})
-            .andWhere('approve_orders.wallet.admin_wallet_num >= :begin_num', {begin_num})
             .andWhere('status = :status', {status: StatusEnum.CHECK_SUCCESS})
+            .andWhere('approve_orders.wallet.admin_wallet_num >= :begin_num', {begin_num})
             .limit(limit_num)
             .getCount();
     }

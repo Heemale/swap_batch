@@ -29,17 +29,6 @@ export class TransactionPrepareDao {
 
     }
 
-    get_admin_special_num_max = async (admin_id: number): Promise<number> => {
-
-        const existingWallets = await this.transactionPrepareEntityRepository.find({
-            where: {admin_id},
-            order: {admin_special_num: 'DESC'},
-            take: 1,
-        });
-
-        return existingWallets.length > 0 ? existingWallets[0].admin_special_num : 0;
-    }
-
     update = async (id, status, hash, remark, prepare_type: PrepareType) => {
 
         let content: object;
@@ -81,15 +70,16 @@ export class TransactionPrepareDao {
 
     }
 
-    get = async (task): Promise<Array<TransactionPrepareEntity>> => {
+    get = async (task_id: number): Promise<Array<TransactionPrepareEntity>> => {
 
         return await this.dataSource.getRepository(TransactionPrepareEntity)
             .createQueryBuilder('orders')
-            .where('task = :task', {task})
-            .andWhere('(status = :status1 OR status = :status2)', {
+            .where('task = :task', {task: task_id})
+            .andWhere('(gas_status = :status1 OR gas_status = :status2 OR token_status = :status1 OR token_status = :status2)', {
                 status1: StatusEnum.NEVER,
                 status2: StatusEnum.FAILURE
             })
+            .limit(1)
             .getMany();
     }
 

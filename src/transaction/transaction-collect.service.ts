@@ -34,6 +34,7 @@ export class TransactionCollectService {
     ) {
     }
 
+    // TODO 取消order_num 传入task_id
     create_collect_order = async (collectBatchDto: CollectBatchDto) => {
 
         const {begin_num, limit_num, token_addresses} = collectBatchDto;
