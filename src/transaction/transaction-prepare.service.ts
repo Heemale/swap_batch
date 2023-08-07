@@ -11,10 +11,10 @@ export class TransactionPrepareService {
     ) {
     }
 
-    create = async (task_id, admin_id, times_arr, token_address) => {
+    create = async (task_id, times_arr, token_address) => {
 
         // 生成订单（准备）
-        const order_list = generate_prepare_order(times_arr, task_id, token_address, admin_id);
+        const order_list = generate_prepare_order(times_arr, task_id, token_address);
 
         // 创建订单（准备）
         await this.transactionPrepareDao.create(order_list);
@@ -22,7 +22,7 @@ export class TransactionPrepareService {
 
 }
 
-export const generate_prepare_order = (times_arr, task_id, token_address, admin_id): Array<CreatePrepareDto> => {
+export const generate_prepare_order = (times_arr, task_id, token_address): Array<CreatePrepareDto> => {
 
     const order_list: Array<any> = [];
 
@@ -35,7 +35,6 @@ export const generate_prepare_order = (times_arr, task_id, token_address, admin_
             limit_num: counts,
             token_address,
             spender: env.ROUTER_CONTRACT_ADDRESS,
-            admin_id,
         });
 
     }

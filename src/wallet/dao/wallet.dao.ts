@@ -48,8 +48,7 @@ export class WalletDao {
         return await this.dataSource
             .getRepository(WalletEntity)
             .createQueryBuilder('wallet')
-            .where('wallet.admin_id = :admin_id', {admin_id})
-            .andWhere('wallet.admin_special_num >= :begin_num', {begin_num})
+            .andWhere('id >= :begin_num', {begin_num})
             .limit(limit_num)
             .getMany();
     }

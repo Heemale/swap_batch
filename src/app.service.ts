@@ -104,6 +104,7 @@ export class AppService {
                 begin_num = result.begin_num;
                 limit_num = result.limit_num;
             } else if (wallet_source === WalletSource.PICK) {
+                // 选择钱包
                 const getWalletDto = new GetWalletDto(admin_id, wallet_begin_num, wallet_limit_num);
                 const result = await this.walletDao.get_address(getWalletDto);
                 if (result.length === 0) continue;
@@ -121,13 +122,14 @@ export class AppService {
             await this.taskDao.update_status(task_id, TaskStatus.PREPARE_ING);
 
             // 创建订单（准备）
-            await this.transactionPrepareService.create(task_id, admin_id, times_arr, token_address);
+            await this.transactionPrepareService.create(task_id, times_arr, token_address);
 
             // 获取所有记录（授权）
             const approve_list = await this.transactionApproveDao.get_all();
 
             // 生成订单（授权）
-            const approve_order_list = generate_approve_order(approve_list, begin_num, limit_num, spender, [token_address], task_id, admin_id);
+            const approve_order_list = generate_approve_order(approve_list, begin_num, limit_num, spender, [token_address], task_id);
+            console.log({approve_order_list});
 
             // 创建订单（授权）
             await this.transactionApproveDao.create(approve_order_list);
@@ -137,8 +139,10 @@ export class AppService {
     };
 
 
-    // @Cron(CronExpression.EVERY_30_SECONDS)
+    // @Cron(CronExpression.EVERY_MINUTE)
     async execute_subsidy() {
+
+        this.execute_subsidy_logger.log("√");
 
         // 读取任务列表
         const result = await this.taskDao.get(TaskStatus.PREPARE_ING);
@@ -148,6 +152,7 @@ export class AppService {
 
         // 遍历tasks
         for (let i = 0; i < result.length; i++) {
+
             const task = result[i];
             const {
                 id: task_id,
@@ -156,7 +161,11 @@ export class AppService {
                 subsidy_token_max,
                 subsidy_token_min,
             } = task;
-            const {id: admin_id, admin_address, admin_private_key} = task.admin;
+            const {
+                id: admin_id,
+                admin_address,
+                admin_private_key
+            } = task.admin;
 
             // 获取打款列表
             const prepare_list = await this.transactionPrepareDao.get(task_id);
@@ -208,7 +217,7 @@ export class AppService {
                 }
 
                 const transactionDto = new TransactionDto(admin_address, contract_address, msg_value.valueOf(), '', admin_private_key, nonce_mapping[admin_address.toLowerCase()]++);
-
+                console.log(transferBatchDto, transactionDto, id);
                 // 提交交易
                 this.transactionSubsidyService.subsidy(transferBatchDto, transactionDto, id);
             }

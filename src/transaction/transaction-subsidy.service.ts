@@ -1,28 +1,22 @@
-import {HttpException, Injectable} from '@nestjs/common';
-import {v4 as uuid} from 'uuid';
+import {Injectable} from '@nestjs/common';
 
 import {env} from '../config';
 import {
+    from_wei,
     send_transaction,
     transfer_ERC20_batch,
     transfer_ETH_batch
 } from '../web3';
-import {convert_to_timestamp, generate_number_array, timestamp} from '../common/util';
-import {StatusEnum} from '../common/enum';
+import {generate_number_array, timestamp} from '../common/util';
+import {PrepareType, StatusEnum} from '../common/enum';
 import {TransactionDto} from '../web3/dto/transaction.dto';
 import {TransferBatchDto} from "../web3/dto/transfer-batch.dto";
 import {TransactionSubsidyDao} from "./dao/transaction-subsidy.dao";
 import {SubsidyUpdateDto} from "./dto/subsidy/subsidy-update.dto";
 import {timesType} from "../common/interface";
-import {SubsidyApproveBatchDto} from "./dto/subsidy/batch/subsidy-approve-batch.dto";
-import {TransactionApproveDao} from "./dao/transaction-approve.dao";
 import {SubsidyCreateDto} from "./dto/subsidy/subsidy-create.dto";
-import {SubsidySwapBatchDto} from "./dto/subsidy/batch/subsidy-swap-batch.dto";
-import {TransactionService} from "./transaction.service";
-import {TaskEntity} from "./entities/task.entity";
-import {TaskDao} from "./dao/task.dao";
-import {SwapBatchDto} from "./dto/swap/batch/swap-batch.dto";
 import {WalletDao} from "../wallet/dao/wallet.dao";
+import {TransactionPrepareDao} from "./dao/transaction-prepare.dao";
 
 export const Web3 = require('web3');
 
@@ -32,126 +26,24 @@ export class TransactionSubsidyService {
     constructor(
         private readonly walletDao: WalletDao,
         private readonly transactionSubsidyDao: TransactionSubsidyDao,
-        private readonly transactionApproveDao: TransactionApproveDao,
-        private readonly taskDao: TaskDao,
-        private readonly transactionService: TransactionService,
+        private readonly transactionPrepareDao: TransactionPrepareDao,
     ) {
     }
 
-    // create_subsidy_approve_order = async (subsidyApproveBatchDto: SubsidyApproveBatchDto) => {
-    //
-    //     const {begin_num, limit_num, value_max, value_min, spender, token_addresses} = subsidyApproveBatchDto;
-    //     const token_address: string = "";
-    //     const order_num = uuid();
-    //
-    //     // 生成批次数组
-    //     const times_arr = clusters(begin_num, limit_num);
-    //
-    //     // 生成订单（打款）
-    //     const subsidy_order_list = generate_subsidy_order(times_arr, order_num, value_max, value_min, token_address);
-    //
-    //     // 创建订单（打款）
-    //     await this.transactionSubsidyDao.create(subsidy_order_list);
-    //
-    //     // 获取所有记录（授权）
-    //     const approve_list = await this.transactionApproveDao.get_all();
-    //
-    //     // 生成订单（授权）
-    //     const approve_order_list = generate_approve_order(approve_list, begin_num, limit_num, spender, token_addresses, order_num);
-    //
-    //     // 创建订单（授权）
-    //     await this.transactionApproveDao.create(approve_order_list);
-    //
-    //     return "已提交";
-    // }
-
-    // create_subsidy_swap_order = async (subsidySwapBatchDto: SubsidySwapBatchDto) => {
-    //
-    //     let {
-    //         begin_num,
-    //         limit_num,
-    //         value_max,
-    //         value_min,
-    //         token_address,
-    //         disposable_switch,
-    //         dense_switch,
-    //         range_switch,
-    //         rangestarttime,
-    //         rangeendtime,
-    //         max_num,
-    //         min_num,
-    //         token_in_amount,
-    //         max_price,
-    //         min_price,
-    //         token_in,
-    //         token_out,
-    //         times: create_times,
-    //     } = subsidySwapBatchDto;
-    //
-    //     if (token_address == "") throw new HttpException("token_address为空", 400);
-    //
-    //     const order_num = uuid();
-    //
-    //     // 生成批次数组
-    //     const times_arr = clusters(begin_num, limit_num);
-    //
-    //     // 生成订单（打款）
-    //     const subsidy_order_list = generate_subsidy_order(times_arr, order_num, value_max, value_min, token_address);
-    //
-    //     // 创建订单（打款）
-    //     await this.transactionSubsidyDao.create(subsidy_order_list);
-    //
-    //     // 创建订单（task）
-    //     // const task = new TaskEntity(
-    //     //     0,
-    //     //     disposable_switch,
-    //     //     dense_switch,
-    //     //     range_switch,
-    //     //     begin_num,
-    //     //     limit_num,
-    //     //     max_num,
-    //     //     min_num,
-    //     //     token_in_amount,
-    //     //     max_price,
-    //     //     min_price,
-    //     //     token_in,
-    //     //     token_out,
-    //     //     create_times,
-    //     //     convert_to_timestamp(rangestarttime),
-    //     //     convert_to_timestamp(rangeendtime),
-    //     //     timestamp(),
-    //     //     timestamp(),
-    //     // );
-    //     // const result = await this.taskDao.create(task);
-    //     // const task_id = result?.raw?.insertId;
-    //     //
-    //     // // 创建订单（swap）
-    //     // const swapBatchDto = new SwapBatchDto(
-    //     //     disposable_switch,
-    //     //     dense_switch,
-    //     //     range_switch,
-    //     //     rangestarttime,
-    //     //     rangeendtime,
-    //     //     begin_num,
-    //     //     limit_num,
-    //     //     max_num,
-    //     //     min_num,
-    //     //     token_in,
-    //     //     token_out,
-    //     //     create_times,
-    //     //     task_id
-    //     // );
-    //     // await this.transactionService.create_swap_order(swapBatchDto);
-    //
-    //     return "已提交";
-    //
-    // }
-
     subsidy = async (transferBatchDto: TransferBatchDto, transactionDto: TransactionDto, order_id) => {
 
-        let subsidy_status = new SubsidyUpdateDto(order_id, StatusEnum.NEVER, null, null);
-        let {token: contract_address} = transferBatchDto;
+        const amount = await from_wei(transactionDto.value);
+        const {token: contract_address} = transferBatchDto;
+
+        let subsidy_status = new SubsidyUpdateDto(order_id, amount, StatusEnum.NEVER, null, null);
         let web3, data, signed, receipt;
+
+        let prepare_type;
+        if (contract_address === "") {
+            prepare_type = PrepareType.GAS;
+        } else {
+            prepare_type = PrepareType.TOKEN;
+        }
 
         // 连接区块链
         try {
@@ -159,7 +51,7 @@ export class TransactionSubsidyService {
         } catch ({message}) {
             subsidy_status.status = StatusEnum.FAILURE;
             subsidy_status.remark = "RPC连接失败";
-            await this.transactionSubsidyDao.update(subsidy_status);
+            await this.transactionPrepareDao.update(subsidy_status, prepare_type);
             return;
         }
 
@@ -171,7 +63,7 @@ export class TransactionSubsidyService {
                 console.log('transfer_ERC20_batch ABI编码异常 => ', e.message);
                 subsidy_status.status = StatusEnum.FAILURE;
                 subsidy_status.remark = e.message;
-                await this.transactionSubsidyDao.update(subsidy_status);
+                await this.transactionPrepareDao.update(subsidy_status, prepare_type);
                 return;
             }
         } else {
@@ -182,7 +74,7 @@ export class TransactionSubsidyService {
                 console.log('transfer_ETH_batch ABI编码异常 => ', e.message);
                 subsidy_status.status = StatusEnum.FAILURE;
                 subsidy_status.remark = e.message;
-                await this.transactionSubsidyDao.update(subsidy_status);
+                await this.transactionPrepareDao.update(subsidy_status, prepare_type);
                 return;
             }
         }
@@ -192,7 +84,8 @@ export class TransactionSubsidyService {
             receipt = await web3.eth.sendSignedTransaction(signed.rawTransaction)
                 .on('transactionHash', (hash) => {
                     subsidy_status.hash = hash;
-                    this.transactionSubsidyDao.update(subsidy_status);
+                    subsidy_status.status = StatusEnum.PENDING;
+                    this.transactionPrepareDao.update(subsidy_status, prepare_type);
                 });
         } catch (e) {
             console.log('transfer_batch 发送交易异常 => ', e.message);
@@ -216,14 +109,14 @@ export class TransactionSubsidyService {
             }
 
             subsidy_status.status = StatusEnum.FAILURE;
-            await this.transactionSubsidyDao.update(subsidy_status);
+            await this.transactionPrepareDao.update(subsidy_status, prepare_type);
             return;
         }
 
         // 交易成功
         subsidy_status.hash = receipt.transactionHash;
         subsidy_status.status = StatusEnum.CHECK_SUCCESS;
-        await this.transactionSubsidyDao.update(subsidy_status);
+        await this.transactionPrepareDao.update(subsidy_status, prepare_type);
     }
 
 }
@@ -244,30 +137,23 @@ export const clusters = (begin_num, limit_num) => {
     return times_arr;
 }
 
-export const generate_subsidy_order = (times_arr, order_num, value_max, value_min, token_address) => {
-
-    const subsidy_order_list = [];
-
-    for (let i = 0; i < times_arr.length; i++) {
-        const start = times_arr[i].start;
-        const counts = times_arr[i].counts;
-        subsidy_order_list.push(new SubsidyCreateDto(order_num, start, counts, value_max, value_min, token_address, timestamp()));
-    }
-
-    return subsidy_order_list;
-}
-
-export const generate_approve_order = (approve_list, begin_num, limit_num, spender, token_addresses, task_id, admin_id) => {
+export const generate_approve_order = (approve_list, begin_num, limit_num, spender, token_addresses, task_id) => {
 
     // <哪些机器人> 已授权 <哪些token>
     const approved_mapping: { [key: number]: string[] } = {};
 
-    approve_list.forEach((item) => {
-        if (!(item.wallet.id in approved_mapping)) {
-            approved_mapping[item.wallet.id] = [];
+    for (let i = 0; i < approve_list.length; i++) {
+
+        const {token_address} = approve_list[i];
+
+        const {id: wallet_id} = approve_list[i].wallet;
+
+        if (!(wallet_id in approved_mapping)) {
+            approved_mapping[wallet_id] = [];
         }
-        approved_mapping[item.wallet.id].push(item.token_address);
-    });
+
+        approved_mapping[wallet_id].push(token_address);
+    }
 
     // <哪些机器人> 没有授权 <哪些token>
     const approve_order_list = [];
@@ -283,7 +169,7 @@ export const generate_approve_order = (approve_list, begin_num, limit_num, spend
 
             if (!(wallet_id in approved_mapping) || approved_mapping[wallet_id].indexOf(token_address) == -1) {
                 approve_order_list.push({
-                    task: task_id, admin_id, wallet: wallet_id, spender, token_address, createtime: timestamp(),
+                    task: task_id, wallet: wallet_id, spender, token_address, createtime: timestamp(),
                 });
             }
 

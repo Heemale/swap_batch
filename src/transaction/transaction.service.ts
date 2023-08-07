@@ -24,7 +24,6 @@ import {SwapUpdateDto} from './dto/swap/swap-update.dto';
 import {TaskDao} from "./dao/task.dao";
 import {GetAmountsOutDto} from "../web3/dto/get-amounts-out.dto";
 import {WalletDao} from "../wallet/dao/wallet.dao";
-import {GetWalletDto} from "../wallet/dto/get-wallet.dto";
 
 export const Web3 = require('web3');
 
@@ -53,11 +52,19 @@ export class TransactionService {
 
         for (let i = 0; i < orders.length; i++) {
 
-            const item = orders[i];
+            const order = orders[i];
 
-            const {id: order_id, token_in, token_out} = item;
-            const {token_in_amount, price_max, price_min} = item?.task;
-            const wallet_address = item.wallet.address.toLowerCase();
+            const {
+                id: order_id,
+                token_in,
+                token_out
+            } = order;
+            const {
+                token_in_amount,
+                price_max,
+                price_min
+            } = order?.task;
+            const wallet_address = order.wallet.address.toLowerCase();
 
             // 转入token数量，用于计算市值（必填）
             if (token_in_amount === 0) continue;
@@ -82,10 +89,10 @@ export class TransactionService {
             const compared_to_min_price = market_price.comparedTo(price_min);
             if (!(compared_to_max_price === -1 && compared_to_min_price === 1)) continue;
 
-            const amount_in = await to_wei(item.amount_in);
+            const amount_in = await to_wei(order.amount_in);
             const deadline = (timestamp() + 86400 * 60 * 1000);
             let swapDto = new SwapDto(amount_in, 0, [token_in, token_out], wallet_address, deadline, env.ROUTER_CONTRACT_ADDRESS);
-            let transactionDto = new TransactionDto(wallet_address, env.ROUTER_CONTRACT_ADDRESS, new BigNumber(0).valueOf(), '', item.wallet.private_key, nonce);
+            let transactionDto = new TransactionDto(wallet_address, env.ROUTER_CONTRACT_ADDRESS, new BigNumber(0).valueOf(), '', order.wallet.private_key, nonce);
 
             // 提交交易
             this.swap(swapDto, transactionDto, order_id);
