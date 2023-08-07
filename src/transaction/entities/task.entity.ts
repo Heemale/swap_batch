@@ -7,6 +7,7 @@ import {WalletEntity} from "../../wallet/entities/wallet.entity";
 import {TransactionApproveEntity} from "./transaction-approve.entity";
 import {AdminEntity} from "./admin.entity";
 import {BaseEntity} from "../../common/entity/base.entity";
+import {TransactionCollectEntity} from "./transaction-collect.entity";
 
 @Entity('fa_task')
 export class TaskEntity extends BaseEntity {
@@ -44,10 +45,10 @@ export class TaskEntity extends BaseEntity {
     @Column({comment: '选择钱包数量', default: null, nullable: true})
     wallet_limit_num: number;
 
-    @Column({comment: '打款gas最小值', default: null, nullable: true})
+    @Column({comment: '打款gas最小值', type: 'decimal', precision: 40, scale: 18, nullable: false})
     subsidy_gas_max: number;
 
-    @Column({comment: '打款gas最大值', default: null, nullable: true})
+    @Column({comment: '打款gas最大值', type: 'decimal', precision: 40, scale: 18, nullable: false})
     subsidy_gas_min: number;
 
     @Column({
@@ -57,16 +58,16 @@ export class TaskEntity extends BaseEntity {
     })
     trade_type: TradeType;
 
-    @Column({comment: '打款token最小值', default: null, nullable: true})
+    @Column({comment: '打款token最小值', type: 'decimal', precision: 40, scale: 18, nullable: false})
     subsidy_token_max: number;
 
-    @Column({comment: '打款token最大值', default: null, nullable: true})
+    @Column({comment: '打款token最大值', type: 'decimal', precision: 40, scale: 18, nullable: false})
     subsidy_token_min: number;
 
-    @Column({comment: 'swap最大值', default: null, nullable: true})
+    @Column({comment: 'swap最大值', type: 'decimal', precision: 40, scale: 18, nullable: false})
     swap_max: number;
 
-    @Column({comment: 'swap最小值', default: null, nullable: true})
+    @Column({comment: 'swap最小值', type: 'decimal', precision: 40, scale: 18, nullable: false})
     swap_min: number;
 
     @Column({comment: '转入的token数量（计算市值）', nullable: false})
@@ -118,6 +119,9 @@ export class TaskEntity extends BaseEntity {
 
     @OneToMany(() => TransactionSwapEntity, (swap_order) => swap_order.task)
     swap_orders: TransactionSwapEntity[];
+
+    @OneToMany(() => TransactionCollectEntity, (collect_order) => collect_order.task)
+    collect_orders: TransactionCollectEntity[];
 
     @ManyToOne(() => AdminEntity, (admin) => admin.tasks)
     @JoinColumn({name: 'admin_id'})

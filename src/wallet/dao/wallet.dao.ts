@@ -3,7 +3,6 @@ import {DataSource, Repository} from 'typeorm';
 import {WalletEntity} from '../entities/wallet.entity';
 import {timestamp} from "../../common/util";
 import {UpdateIntervalDto} from "../dto/update-interval.dto";
-import {CreateWalletDto} from "../dto/create-wallet.dto";
 import {GetWalletDto} from "../dto/get-wallet.dto";
 import {InjectRepository} from "@nestjs/typeorm";
 
@@ -29,7 +28,7 @@ export class WalletDao {
         return existing_wallets.length > 0 ? existing_wallets[0].admin_special_num : 0;
     }
 
-    create = async (wallets: Array<CreateWalletDto>) => {
+    create = async (wallets) => {
         const result = await this.dataSource
             .createQueryBuilder()
             .insert()
@@ -50,7 +49,7 @@ export class WalletDao {
             .getRepository(WalletEntity)
             .createQueryBuilder('wallet')
             .where('wallet.admin_id = :admin_id', {admin_id})
-            .andWhere('wallet.admin_wallet_num >= :begin_num', {begin_num})
+            .andWhere('wallet.admin_special_num >= :begin_num', {begin_num})
             .limit(limit_num)
             .getMany();
     }

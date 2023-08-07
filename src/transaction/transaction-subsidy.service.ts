@@ -278,12 +278,15 @@ export const generate_approve_order = (approve_list, begin_num, limit_num, spend
         const token_address = token_addresses[i];
 
         for (let j = 0; j < input_array.length; j++) {
+
             const wallet_id = input_array[j];
+
             if (!(wallet_id in approved_mapping) || approved_mapping[wallet_id].indexOf(token_address) == -1) {
                 approve_order_list.push({
                     task: task_id, admin_id, wallet: wallet_id, spender, token_address, createtime: timestamp(),
                 });
             }
+
         }
 
     }

@@ -1,4 +1,4 @@
-import {HttpException, Injectable, Logger} from '@nestjs/common';
+import {Injectable, Logger} from '@nestjs/common';
 import {Cron, CronExpression} from "@nestjs/schedule";
 import BigNumber from "bignumber.js";
 
@@ -20,15 +20,15 @@ import {TransactionPrepareService} from "./transaction/transaction-prepare.servi
 import {CreateWalletBatchDto} from "./wallet/dto/create-wallet-batch.dto";
 import {GetWalletDto} from "./wallet/dto/get-wallet.dto";
 
-import {StatusEnum, SwitchEnum, TaskStatus, TradeType, WalletSource} from "./common/enum";
+import {StatusEnum, TaskStatus, TradeType, WalletSource} from "./common/enum";
 import {get_balance, get_nonce, to_wei} from "./web3";
-import {env} from "./config";
-import {convert_to_timestamp, get_random, random, timestamp, uint256_max} from "./common/util";
+import {env, update_env} from "./config";
+import {get_random, random, timestamp, uint256_max} from "./common/util";
 import {TransferBatchDto} from "./web3/dto/transfer-batch.dto";
 import {TransactionDto} from "./web3/dto/transaction.dto";
 import {ApproveDto} from "./web3/dto/approve.dto";
-import {SwapBatchDto} from "./transaction/dto/swap/batch/swap-batch.dto";
 import {SwapCreateDto} from "./transaction/dto/swap/swap-create.dto";
+import {CollectBatchDto} from "./transaction/dto/collect/batch/collect-batch.dto";
 
 @Injectable()
 export class AppService {
@@ -63,6 +63,8 @@ export class AppService {
 
     @Cron(CronExpression.EVERY_MINUTE)
     async create_subsidy_approve() {
+
+        this.create_subsidy_approve_logger.log("√");
 
         // 获取未执行的task
         const tasks = await this.taskDao.get(TaskStatus.NEVER);
@@ -102,9 +104,11 @@ export class AppService {
                 begin_num = result.begin_num;
                 limit_num = result.limit_num;
             } else if (wallet_source === WalletSource.PICK) {
-                // 选择钱包
-                begin_num = wallet_begin_num;
-                limit_num = wallet_limit_num;
+                const getWalletDto = new GetWalletDto(admin_id, wallet_begin_num, wallet_limit_num);
+                const result = await this.walletDao.get_address(getWalletDto);
+                if (result.length === 0) continue;
+                begin_num = result[0].id;
+                limit_num = result.length;
             } else {
                 continue;
             }
@@ -123,7 +127,7 @@ export class AppService {
             const approve_list = await this.transactionApproveDao.get_all();
 
             // 生成订单（授权）
-            const approve_order_list = generate_approve_order(approve_list, wallet_begin_num, wallet_limit_num, spender, [token_address], task_id, admin_id);
+            const approve_order_list = generate_approve_order(approve_list, begin_num, limit_num, spender, [token_address], task_id, admin_id);
 
             // 创建订单（授权）
             await this.transactionApproveDao.create(approve_order_list);
@@ -270,6 +274,7 @@ export class AppService {
 
             // 获取【钱包】是否授权了【使用者】【指定token】使用权
             const getWalletDto = new GetWalletDto(admin_id, wallet_begin_num, wallet_limit_num);
+            // TODO 有问题
             const success_counts = await this.transactionApproveDao.get_success_counts(getWalletDto);
 
             // 如果 交易成功的数量 和 limit_num 一样，更改task为授权完成
@@ -420,15 +425,31 @@ export class AppService {
 
         // 遍历tasks
         for (let i = 0; i < tasks.length; i++) {
+
             const task = tasks[i];
+
             const {id: task_id, wallet_begin_num, wallet_limit_num, collecttime} = task;
+
             const {id: admin_id} = task.admin;
 
             // 更改task为归集中
-            if (collecttime < timestamp()) await this.taskDao.update_status(task_id, TaskStatus.COLLECT_ING);
+            if (collecttime <= timestamp()) await this.taskDao.update_status(task_id, TaskStatus.COLLECT_ING);
+
+            let token_address = "";
+
+            // 交易类型
+            if (task.trade_type === TradeType.BUY) {
+                token_address = task.trade_pair.token1_address;
+            } else if (task.trade_type === TradeType.SELL) {
+                token_address = task.trade_pair.token0_address;
+            } else {
+                continue;
+            }
+            if (token_address === "") continue;
 
             // 创建归集记录
-            // this.collectTransactionService.create_collect_order();
+            const collectBatchDto = new CollectBatchDto(task_id, wallet_begin_num, wallet_limit_num, [token_address])
+            this.transactionCollectService.create_collect_order(collectBatchDto);
 
         }
     }
@@ -443,33 +464,67 @@ export class AppService {
         const orders = await this.transactionCollectDao.get_wrong();
 
         // 批量提交
-        // this.collectTransactionService.collect(orders);
+        this.transactionCollectService.collect(orders);
+    }
+
+    // TODO 更改归集状态 根据task_id获取collect_orders，如果都是已完成，那就更改
+    async collect_process() {
+
+        // 获取归集中的task
+        const tasks = await this.taskDao.get(TaskStatus.COLLECT_ING);
+
+        // 遍历tasks
+        for (let i = 0; i < tasks.length; i++) {
+
+            // const task = tasks[i];
+            // const {id: task_id, wallet_begin_num, wallet_limit_num} = task;
+            // const {id: admin_id} = task.admin;
+            //
+            // let token_address = "";
+            // const spender = env.ROUTER_CONTRACT_ADDRESS;
+            //
+            // // 交易类型
+            // if (task.trade_type === TradeType.BUY) {
+            //     token_address = task.trade_pair.token1_address;
+            // } else if (task.trade_type === TradeType.SELL) {
+            //     token_address = task.trade_pair.token0_address;
+            // } else {
+            //     continue;
+            // }
+            //
+            // // 获取【钱包】是否授权了【使用者】【指定token】使用权
+            // const getWalletDto = new GetWalletDto(admin_id, wallet_begin_num, wallet_limit_num);
+            // const success_counts = await this.transactionApproveDao.get_success_counts(getWalletDto);
+            //
+            // // 如果 交易成功的数量 和 limit_num 一样，更改task为归集完成
+            // if (success_counts === wallet_limit_num) await this.taskDao.update_status(task_id, TaskStatus.COLLECT_DONE);
+
+        }
+    }
+
+    // @Cron(CronExpression.EVERY_MINUTE)
+    async update_env() {
+
+        await update_env();
+
+        // 配置变更
+        if (env.CREATE_TIME !== env.CREATE_TIME_LAST) {
+
+            this.update_env_logger.log("更新扫描task时间");
+
+            // clearInterval(this.create_swap);
+            //
+            // this.create_swap = setInterval(() => {
+            //     this.monitor_task_swap_logger.log("√");
+            //     this.transactionService.create_swap_from_task();
+            // }, 1000 * env.CREATE_TIME);
+
+            env.CREATE_TIME_LAST = env.CREATE_TIME;
+        }
+
     }
 
 
-    // @Cron(CronExpression.EVERY_MINUTE)
-    // async update_env() {
-    //
-    //     await update_env();
-    //
-    //     // 配置变更
-    //     if (env.CREATE_TIME !== env.CREATE_TIME_LAST) {
-    //
-    //         this.update_env_logger.log("更新扫描task时间");
-    //
-    //         clearInterval(this.create_swap);
-    //
-    //         this.create_swap = setInterval(() => {
-    //             this.monitor_task_swap_logger.log("√");
-    //             this.transactionService.create_swap_from_task();
-    //         }, 1000 * env.CREATE_TIME);
-    //
-    //         env.CREATE_TIME_LAST = env.CREATE_TIME;
-    //     }
-    //
-    // }
-    //
-    //
     // create_swap: NodeJS.Timeout = setInterval(() => {
     //     this.monitor_task_swap_logger.log("√");
     //     this.transactionService.create_swap_from_task();

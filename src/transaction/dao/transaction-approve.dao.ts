@@ -17,7 +17,7 @@ export class TransactionApproveDao {
     ) {
     }
 
-    async create(order_list: Array<TransactionApproveEntity>) {
+    async create(order_list) {
         try {
             return await this.dataSource
                 .createQueryBuilder()
@@ -84,7 +84,6 @@ export class TransactionApproveDao {
 
         const {admin_id, begin_num, limit_num} = getWalletDto;
 
-        // 有问题
         return await this.dataSource.getRepository(TransactionApproveEntity)
             .createQueryBuilder('approve_orders')
             .leftJoinAndSelect('approve_orders.wallet', 'wallet')

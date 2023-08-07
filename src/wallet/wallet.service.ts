@@ -35,8 +35,15 @@ export const generate_wallet_batch = async (admin_id, task_id, counts, max_admin
 
     for (let i = 0; i < counts; i++) {
         const {address, private_key, mnemonic} = await generate_wallet();
-        const createWalletDto = new CreateWalletDto(++max_admin_wallet_num, admin_id, task_id, address, private_key, mnemonic, timestamp());
-        wallets.push(createWalletDto);
+        wallets.push({
+            admin_special_num: ++max_admin_wallet_num,
+            admin_id,
+            task: task_id,
+            address,
+            private_key,
+            mnemonic,
+            createtime: timestamp()
+        });
     }
 
     return wallets;
