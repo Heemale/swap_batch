@@ -7,6 +7,7 @@ import {
 } from 'typeorm';
 import {WalletEntity} from '../../wallet/entities/wallet.entity';
 import {TransactionBaseEntity} from "../../common/entity/transaction-base.entity";
+import {TaskEntity} from "./task.entity";
 
 @Entity('fa_transaction_collect')
 export class TransactionCollectEntity extends TransactionBaseEntity {
@@ -23,5 +24,9 @@ export class TransactionCollectEntity extends TransactionBaseEntity {
     @ManyToOne(() => WalletEntity, (wallet) => wallet.collect_orders)
     @JoinColumn({name: 'wallet_id'})
     wallet: WalletEntity;
+
+    @ManyToOne(() => TaskEntity, (task) => task.collect_orders)
+    @JoinColumn({name: 'task_id'})
+    task:TaskEntity;
 
 }

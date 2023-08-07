@@ -67,18 +67,25 @@ export class TransactionCollectDao {
     }
 
     async get_wrong() {
-        let values = [StatusEnum.CHECK_SUCCESS, StatusEnum.CHECK_SUCCESS];
+
+        let values = [
+            StatusEnum.NEVER,
+            StatusEnum.FAILURE,
+            StatusEnum.NEVER,
+            StatusEnum.FAILURE
+        ];
+
         let sql = `
         SELECT orders.*,wallet.address,wallet.private_key FROM (
         \tSELECT * FROM (
         \t\tSELECT * FROM fa_transaction_collect
-        \t\tWHERE token_address <> '' AND status <> ?
+        \t\tWHERE token_address <> '' AND (status = ? OR status = ?)
         \t\tGROUP BY wallet_id
         \t\t
         \t\tUNION ALL
         \t\t
         \t\tSELECT * FROM fa_transaction_collect
-        \t\tWHERE token_address = '' AND status <> ?
+        \t\tWHERE token_address = '' AND (status = ? OR status = ?)
         \t\tGROUP BY wallet_id
         \t\t
         \t) t1

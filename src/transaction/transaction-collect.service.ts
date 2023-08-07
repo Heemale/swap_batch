@@ -34,11 +34,9 @@ export class TransactionCollectService {
     ) {
     }
 
-    // TODO 取消order_num 传入task_id
     create_collect_order = async (collectBatchDto: CollectBatchDto) => {
 
-        const {begin_num, limit_num, token_addresses} = collectBatchDto;
-        const order_num = uuid();
+        const {begin_num, limit_num, token_addresses, task_id} = collectBatchDto;
 
         // 生成订单（归集）
         let order_list = [];
@@ -49,7 +47,7 @@ export class TransactionCollectService {
             let user_id = begin_num;
             for (let j = begin_num; j < begin_num + limit_num; j++) {
                 order_list.push({
-                    order_num, wallet: user_id, amount: null, token_address, createtime: timestamp(),
+                    task: task_id, wallet: user_id, amount: null, token_address, createtime: timestamp(),
                 });
                 user_id++;
             }

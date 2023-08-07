@@ -2,10 +2,20 @@ import {ApiProperty} from '@nestjs/swagger';
 
 export class CollectBatchDto {
 
-    @ApiProperty({description: '起始编号', default: 1, example: 1})
+    constructor(task_id: number, begin_num: number, limit_num: number, token_addresses: string[]) {
+        this.task_id = task_id;
+        this.begin_num = begin_num;
+        this.limit_num = limit_num;
+        this.token_addresses = token_addresses;
+    }
+
+    @ApiProperty({description: '任务编号', example: 1})
+    readonly task_id: number;
+
+    @ApiProperty({description: '起始编号', example: 1})
     readonly begin_num: number;
 
-    @ApiProperty({description: '从起始编号开始，选取几个账号', default: 1, example: 1})
+    @ApiProperty({description: '从起始编号开始，选取几个账号', example: 1})
     readonly limit_num: number;
 
     @ApiProperty({
