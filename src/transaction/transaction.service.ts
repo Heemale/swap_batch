@@ -1,5 +1,4 @@
-import {HttpException, Injectable} from '@nestjs/common';
-import {v4 as uuid} from 'uuid';
+import { Injectable} from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 
 import {env} from '../config';
@@ -12,14 +11,12 @@ import {
     swap,
     to_wei,
 } from '../web3';
-import {convert_to_timestamp, format_timestamp, get_random, timestamp} from '../common/util';
+import { timestamp} from '../common/util';
 
 import {TransactionSwapDao} from './dao/transaction-swap.dao';
-import {SwapCreateDto} from './dto/swap/swap-create.dto';
-import {SwapBatchDto} from './dto/swap/batch/swap-batch.dto';
 import {SwapDto} from '../web3/dto/swap.dto';
 import {TransactionDto} from '../web3/dto/transaction.dto';
-import {StatusEnum, SwitchEnum} from '../common/enum';
+import {StatusEnum,} from '../common/enum';
 import {SwapUpdateDto} from './dto/swap/swap-update.dto';
 import {TaskDao} from "./dao/task.dao";
 import {GetAmountsOutDto} from "../web3/dto/get-amounts-out.dto";

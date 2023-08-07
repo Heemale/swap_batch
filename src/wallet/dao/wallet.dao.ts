@@ -43,7 +43,7 @@ export class WalletDao {
 
     get_address = async (getWalletDto: GetWalletDto): Promise<Array<WalletEntity>> => {
 
-        const {admin_id, begin_num, limit_num} = getWalletDto;
+        const {begin_num, limit_num} = getWalletDto;
 
         return await this.dataSource
             .getRepository(WalletEntity)
