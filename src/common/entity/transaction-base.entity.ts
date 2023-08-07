@@ -1,8 +1,8 @@
 import {Column} from 'typeorm';
 import {StatusEnum} from "../enum";
-import {AdminBaseEntity} from "./admin-base.entity";
+import {BaseEntity} from "./base.entity";
 
-export class TransactionBaseEntity extends AdminBaseEntity {
+export class TransactionBaseEntity extends BaseEntity {
 
     @Column({
         type: 'enum',

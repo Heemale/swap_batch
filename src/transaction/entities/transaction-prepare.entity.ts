@@ -2,14 +2,14 @@ import {
     Entity,
     Column,
     PrimaryGeneratedColumn,
-    JoinColumn, ManyToOne, Unique,
+    JoinColumn, ManyToOne,
 } from 'typeorm';
-import {AdminBaseEntity} from "../../common/entity/admin-base.entity";
 import {StatusEnum} from "../../common/enum";
 import {TaskEntity} from "./task.entity";
+import {BaseEntity} from "../../common/entity/base.entity";
 
 @Entity('fa_transaction_prepare')
-export class TransactionPrepareEntity extends AdminBaseEntity {
+export class TransactionPrepareEntity extends BaseEntity {
 
     @PrimaryGeneratedColumn({comment: '准备记录ID'})
     id: number;

@@ -31,7 +31,6 @@ export enum WalletSource {
 export enum PrepareType {
     GAS = '0', // 打款gas
     TOKEN = '1', // 打款token
-    APPROVE = '2' // 授权
 }
 
 export enum SwitchEnum {
