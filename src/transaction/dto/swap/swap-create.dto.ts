@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class SwapCreateDto {
 
-  constructor( wallet: number, task: number, times: number, interval_num: number, executetime: number, rangestarttime: number, rangeendtime: number, amount_in: number, token_in: string, token_out: string, createtime: number) {
+  constructor( wallet: number, task: number, times: number, interval_num: number, executetime: number, rangestarttime: number, rangeendtime: number, amount_in: string, token_in: string, token_out: string, createtime: number) {
     this.wallet = wallet;
     this.task = task;
     this.times = times;
@@ -38,7 +38,7 @@ export class SwapCreateDto {
   rangeendtime: number;
 
   @ApiProperty({ description: '转入token数量' })
-  amount_in: number;
+  amount_in: string;
 
   @ApiProperty({ description: '转入token' })
   token_in: string;

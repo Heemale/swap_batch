@@ -13,7 +13,7 @@ export class ApproveUpdateAdminDto {
   @ApiProperty({ description: 'ID' })
   id: number;
 
-  @ApiProperty({ description: '打款状态' })
+  @ApiProperty({ description: '交易状态' })
   status: StatusEnum;
 
   @ApiProperty({ description: '备注' })

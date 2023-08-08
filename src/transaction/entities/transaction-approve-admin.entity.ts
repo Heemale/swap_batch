@@ -7,7 +7,7 @@ import {TransactionBaseEntity} from "../../common/entity/transaction-base.entity
 import {AdminEntity} from "./admin.entity";
 
 @Entity('fa_transaction_approve_admin')
-@Unique('unique_token_wallet', ['token_address', 'admin'])
+@Unique('unique_token_wallet', ['token_address', 'spender', 'admin'])
 export class TransactionApproveAdminEntity extends TransactionBaseEntity {
 
     @PrimaryGeneratedColumn({comment: '授权记录ID'})

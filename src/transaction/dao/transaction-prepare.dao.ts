@@ -25,6 +25,7 @@ export class TransactionPrepareDao {
                 .values(order_list)
                 .execute();
         } catch (e) {
+            console.log("TransactionPrepareEntity create失败 => ", e.message);
             return e;
         }
 

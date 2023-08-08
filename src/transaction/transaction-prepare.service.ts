@@ -1,7 +1,7 @@
 import {Injectable} from '@nestjs/common';
-import {CreatePrepareDto} from "./dto/prepare/create-prepare.dto";
 import {TransactionPrepareDao} from "./dao/transaction-prepare.dao";
 import {env} from "../config";
+import {timestamp} from "../common/util";
 
 @Injectable()
 export class TransactionPrepareService {
@@ -22,9 +22,10 @@ export class TransactionPrepareService {
 
 }
 
-export const generate_prepare_order = (times_arr, task_id, token_address): Array<CreatePrepareDto> => {
+export const generate_prepare_order = (times_arr, task_id, token_address) => {
 
     const order_list: Array<any> = [];
+    const createtime = timestamp();
 
     for (let i = 0; i < times_arr.length; i++) {
         const start = times_arr[i].start;
@@ -35,6 +36,7 @@ export const generate_prepare_order = (times_arr, task_id, token_address): Array
             limit_num: counts,
             token_address,
             spender: env.ROUTER_CONTRACT_ADDRESS,
+            createtime
         });
 
     }

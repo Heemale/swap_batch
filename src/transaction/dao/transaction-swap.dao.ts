@@ -17,7 +17,7 @@ export class TransactionSwapDao {
     ) {
     }
 
-    async create(order_list: Array<TransactionSwapEntity>) {
+    async create(order_list) {
         try {
             return await this.dataSource
                 .createQueryBuilder()
@@ -31,6 +31,7 @@ export class TransactionSwapDao {
                     };
                 });
         } catch (e) {
+            console.log("TransactionSwapEntity create写入失败 => ", e.message);
             return e;
         }
 
@@ -92,7 +93,7 @@ export class TransactionSwapDao {
                     remark,
                     amount_out,
                     hash,
-                    failure_counts: () => "failure_counts + 1", // 将 failure_counts 字段自增 1
+                    failed_counts: () => "failed_counts + 1", // 失败次数自增1
                     updatetime: timestamp(),
                 });
             } else {
@@ -109,6 +110,7 @@ export class TransactionSwapDao {
                 .where('id = :id', {id})
                 .execute();
         } catch (e) {
+            console.log("swap update异常 => ", e.message);
             return e;
         }
     }

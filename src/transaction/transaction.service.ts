@@ -47,7 +47,7 @@ export class TransactionService {
         const orders = await this.transactionSwapDao.get(type);
 
         // nonce_mapping
-        const nonce_mapping: { [key: string]: bigint } = {};
+        let nonce_mapping: { [key: string]: bigint } = {};
 
         for (let i = 0; i < orders.length; i++) {
 
@@ -66,12 +66,14 @@ export class TransactionService {
             const wallet_address = order.wallet.address.toLowerCase();
 
             // 转入token数量，用于计算市值（必填）
+            console.log({token_in_amount});
             if (token_in_amount === 0) continue;
 
             // 如果未查询过nonce
             if (!(wallet_address.toLowerCase() in nonce_mapping)) {
                 nonce_mapping[wallet_address.toLowerCase()] = await get_nonce(wallet_address);
             }
+            console.log({nonce_mapping});
 
             // 获取市值
             const getAmountsOutDto = new GetAmountsOutDto(token_in_amount, [token_in, token_out], env.ROUTER_CONTRACT_ADDRESS);
@@ -84,9 +86,10 @@ export class TransactionService {
 
             const amount_in = await to_wei(order.amount_in);
             const deadline = (timestamp() + 86400 * 60 * 1000);
-            let swapDto = new SwapDto(amount_in, 0, [token_in, token_out], wallet_address, deadline, env.ROUTER_CONTRACT_ADDRESS);
-            let transactionDto = new TransactionDto(wallet_address, env.ROUTER_CONTRACT_ADDRESS, new BigNumber(0).valueOf(), '', order.wallet.private_key, nonce_mapping[wallet_address.toLowerCase()]++);
-
+            const swapDto = new SwapDto(amount_in, 0, [token_in, token_out], wallet_address, deadline, env.ROUTER_CONTRACT_ADDRESS);
+            const transactionDto = new TransactionDto(wallet_address, env.ROUTER_CONTRACT_ADDRESS, new BigNumber(0).valueOf(), '', order.wallet.private_key, nonce_mapping[wallet_address.toLowerCase()]++);
+            // console.log({swapDto});
+            // console.log({transactionDto});
             // 提交交易
             this.swap(swapDto, transactionDto, order_id);
         }
@@ -94,6 +97,8 @@ export class TransactionService {
     }
 
     swap = async (swapDto: SwapDto, transactionDto: TransactionDto, order_id) => {
+
+        console.log("swap()");
 
         let web3, data, signed, receipt;
 
@@ -103,6 +108,7 @@ export class TransactionService {
         try {
             web3 = await new Web3(new Web3.providers.HttpProvider(env.HTTP_PROVIDER));
         } catch ({message}) {
+            console.log("连接区块链 => ", message)
             swap_status.status = StatusEnum.FAILURE;
             swap_status.remark = "RPC连接失败";
             await this.transactionSwapDao.update(swap_status);
@@ -123,6 +129,7 @@ export class TransactionService {
             swap_status.remark = "token不足";
             swap_status.failed = true;
             await this.transactionSwapDao.update(swap_status);
+            console.log("token不足 => ",swap_status);
             return;
         }
 
