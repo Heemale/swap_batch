@@ -66,7 +66,6 @@ export class TransactionService {
             const wallet_address = order.wallet.address.toLowerCase();
 
             // 转入token数量，用于计算市值（必填）
-            console.log({token_in_amount});
             if (token_in_amount === 0) continue;
 
             // 如果未查询过nonce
@@ -88,8 +87,7 @@ export class TransactionService {
             const deadline = (timestamp() + 86400 * 60 * 1000);
             const swapDto = new SwapDto(amount_in, 0, [token_in, token_out], wallet_address, deadline, env.ROUTER_CONTRACT_ADDRESS);
             const transactionDto = new TransactionDto(wallet_address, env.ROUTER_CONTRACT_ADDRESS, new BigNumber(0).valueOf(), '', order.wallet.private_key, nonce_mapping[wallet_address.toLowerCase()]++);
-            // console.log({swapDto});
-            // console.log({transactionDto});
+
             // 提交交易
             this.swap(swapDto, transactionDto, order_id);
         }
@@ -121,15 +119,27 @@ export class TransactionService {
         const amount_in = swapDto.amountIn;
         const from = transactionDto.from;
         const token_address = swapDto.path[0];
+        console.log({from, token_address})
         const balance = await get_token_balance(from, token_address);
         const amount_in_BN = new BigNumber(amount_in);
         const balance_BN = new BigNumber(balance);
+
+        console.log({
+            swapDto,
+            transactionDto,
+            order_id
+        })
+        console.log({
+            amount_in_BN: amount_in_BN.valueOf(),
+            balance_BN: balance_BN.valueOf()
+        });
+
         if (amount_in_BN.gt(balance_BN)) {
             swap_status.status = StatusEnum.FAILURE;
             swap_status.remark = "token不足";
             swap_status.failed = true;
             await this.transactionSwapDao.update(swap_status);
-            console.log("token不足 => ",swap_status);
+            console.log("token不足 => ", swap_status);
             return;
         }
 

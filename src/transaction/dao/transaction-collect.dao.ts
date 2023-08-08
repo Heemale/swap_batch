@@ -58,12 +58,14 @@ export class TransactionCollectDao {
         }
     }
 
-    async get_by_order_num(order_num: any) {
+    async get_success_counts(task_id: number) {
+
         return await this.dataSource.getRepository(TransactionCollectEntity)
-            .createQueryBuilder('orders')
-            .leftJoinAndSelect('orders.wallet', 'wallet')
-            .where('order_num = :order_num', {order_num})
-            .getMany();
+            .createQueryBuilder('collect_order')
+            .where('task_id = :task_id', {task_id})
+            .andWhere('status = :status', {status: StatusEnum.CHECK_SUCCESS})
+            .getCount();
+
     }
 
     async get_wrong() {

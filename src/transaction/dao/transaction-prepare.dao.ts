@@ -41,14 +41,14 @@ export class TransactionPrepareDao {
             content = {
                 gas_amount: amount,
                 gas_status: status,
-                gas_hash: hash,
+                gas_tx_hash: hash,
                 gas_remark: remark,
             }
         } else if (prepare_type === PrepareType.TOKEN) {
             content = {
                 token_amount: amount,
                 token_status: status,
-                token_hash: hash,
+                token_tx_hash: hash,
                 token_remark: remark,
             }
         } else {

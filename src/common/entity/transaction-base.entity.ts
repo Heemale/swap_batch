@@ -15,7 +15,7 @@ export class TransactionBaseEntity extends BaseEntity {
     @Column({comment: '交易hash', default: null})
     hash: string;
 
-    @Column({comment: '备注', default: null})
+    @Column({comment: '备注', type: "text", default: null})
     remark: string;
 
 }

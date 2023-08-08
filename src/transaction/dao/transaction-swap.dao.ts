@@ -37,13 +37,13 @@ export class TransactionSwapDao {
 
     }
 
-    async get_by_order_num(order_num: string) {
+    async get_success_counts(task_id: number) {
 
         return await this.dataSource.getRepository(TransactionSwapEntity)
             .createQueryBuilder('swap_order')
-            .leftJoinAndSelect('swap_order.wallet', 'wallet')
-            .where('order_num = :order_num', {order_num})
-            .getMany();
+            .where('task_id = :task_id', {task_id})
+            .andWhere('status = :status', {status: StatusEnum.CHECK_SUCCESS})
+            .getCount();
 
     }
 

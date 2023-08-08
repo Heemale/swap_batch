@@ -16,6 +16,7 @@ import {SubsidyUpdateDto} from "./dto/subsidy/subsidy-update.dto";
 import {timesType} from "../common/interface";
 import {WalletDao} from "../wallet/dao/wallet.dao";
 import {TransactionPrepareDao} from "./dao/transaction-prepare.dao";
+import BigNumber from "bignumber.js";
 
 export const Web3 = require('web3');
 
@@ -31,18 +32,21 @@ export class TransactionSubsidyService {
 
     subsidy = async (transferBatchDto: TransferBatchDto, transactionDto: TransactionDto, order_id) => {
 
-        const amount = await from_wei(transactionDto.value);
         const {token: contract_address} = transferBatchDto;
 
-        let subsidy_status = new SubsidyUpdateDto(order_id, amount, StatusEnum.NEVER, null, null);
         let web3, data, signed, receipt;
+        let amount, prepare_type;
 
-        let prepare_type;
         if (contract_address === "") {
             prepare_type = PrepareType.GAS;
+            amount = await from_wei(transactionDto.value);
         } else {
             prepare_type = PrepareType.TOKEN;
+            const sum = transferBatchDto.amounts.reduce((acc, current) => acc.plus(new BigNumber(current)), new BigNumber(0));
+            amount = sum.dividedBy(new BigNumber('10').pow(18)).toFixed(18);
         }
+
+        let subsidy_status = new SubsidyUpdateDto(order_id, amount, StatusEnum.NEVER, null, null);
 
         // 连接区块链
         try {

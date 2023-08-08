@@ -24,7 +24,7 @@ export class TransactionPrepareEntity extends BaseEntity {
     gas_amount: number;
 
     @Column({comment: '打款gas交易hash', default: null})
-    gas_hash: string;
+    gas_tx_hash: string;
 
     @Column({comment: '打款gas交易备注', default: null})
     gas_remark: string;
@@ -44,7 +44,7 @@ export class TransactionPrepareEntity extends BaseEntity {
     token_amount: number;
 
     @Column({comment: '打款token交易hash', default: null})
-    token_hash: string;
+    token_tx_hash: string;
 
     @Column({comment: '打款token交易备注', default: null})
     token_remark: string;

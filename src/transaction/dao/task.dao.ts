@@ -3,7 +3,7 @@ import {timestamp} from '../../common/util';
 import {InjectRepository} from "@nestjs/typeorm";
 import {DataSource, Repository} from "typeorm";
 import {TaskEntity} from "../entities/task.entity";
-import {SwitchEnum, TaskStatus} from "../../common/enum";
+import {StatusEnum, SwitchEnum, TaskStatus} from "../../common/enum";
 
 @Injectable()
 export class TaskDao {
@@ -15,6 +15,7 @@ export class TaskDao {
     ) {
     }
 
+
     create = async (task: TaskEntity) => {
 
         return await this.dataSource
@@ -24,6 +25,7 @@ export class TaskDao {
             .values(task)
             .execute();
     }
+
 
     update_disposabletime = async (id) => {
 
@@ -42,6 +44,7 @@ export class TaskDao {
         }
     }
 
+
     get = async (status: TaskStatus) => {
 
         return await this.dataSource.getRepository(TaskEntity)
@@ -54,6 +57,19 @@ export class TaskDao {
             .andWhere('disposabletime is :disposabletime', {disposabletime: null})
             .getMany();
     }
+
+
+    get_collect = async () => {
+        return await this.dataSource.getRepository(TaskEntity)
+            .createQueryBuilder('tasks')
+            .where('collecttime <= :timestamp', {timestamp: timestamp()})
+            .andWhere('(status != :status1 AND status != status2)', {
+                status1: TaskStatus.COLLECT_ING,
+                status2: TaskStatus.COLLECT_DONE
+            })
+            .getMany();
+    }
+
 
     update_status = async (id: number, status: TaskStatus) => {
 

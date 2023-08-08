@@ -44,12 +44,12 @@ export class TransactionCollectService {
 
             const token_address = token_addresses[i];
 
-            let user_id = begin_num;
+            let wallet_id = begin_num;
             for (let j = begin_num; j < begin_num + limit_num; j++) {
                 order_list.push({
-                    task: task_id, wallet: user_id, amount: null, token_address, createtime: timestamp(),
+                    task: task_id, wallet: wallet_id, amount: null, token_address, createtime: timestamp(),
                 });
-                user_id++;
+                wallet_id++;
             }
 
         }
@@ -59,8 +59,10 @@ export class TransactionCollectService {
     }
 
     collect = async (orders) => {
-        orders.filter(async (item) => {
 
+        for (let i = 0; i < orders.length; i++) {
+
+            const item = orders[i];
             const order_id = item.id;
             const contract_address = item.token_address;
 
@@ -228,7 +230,8 @@ export class TransactionCollectService {
 
             collectUpdateDto.status = StatusEnum.CHECK_SUCCESS;
             await this.collectTransactionDao.update(collectUpdateDto);
-        });
+
+        }
     }
 
 }
