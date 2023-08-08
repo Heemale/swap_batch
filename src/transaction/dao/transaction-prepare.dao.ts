@@ -16,7 +16,7 @@ export class TransactionPrepareDao {
     ) {
     }
 
-    create = async (order_list: Array<any>) => {
+    create = async (order_list) => {
         try {
             return await this.dataSource
                 .createQueryBuilder()

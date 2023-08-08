@@ -17,7 +17,6 @@ import {TransactionApproveService} from "./transaction/transaction-approve.servi
 import {TransactionService} from "./transaction/transaction.service";
 import {TransactionPrepareService} from "./transaction/transaction-prepare.service";
 
-import {CreateWalletBatchDto} from "./wallet/dto/create-wallet-batch.dto";
 import {GetWalletDto} from "./wallet/dto/get-wallet.dto";
 
 import {StatusEnum, TaskStatus, TradeType, WalletSource} from "./common/enum";
@@ -29,6 +28,7 @@ import {TransactionDto} from "./web3/dto/transaction.dto";
 import {ApproveDto} from "./web3/dto/approve.dto";
 import {SwapCreateDto} from "./transaction/dto/swap/swap-create.dto";
 import {CollectBatchDto} from "./transaction/dto/collect/batch/collect-batch.dto";
+import {CreateWalletBatchDto} from "./wallet/dto/create-wallet-batch.dto";
 
 @Injectable()
 export class AppService {
@@ -60,14 +60,15 @@ export class AppService {
     private readonly execute_collect_logger = new Logger("定时任务：执行归集");
     private readonly update_env_logger = new Logger("定时任务：更新配置");
 
+    // TODO 管理员授权
 
     @Cron(CronExpression.EVERY_MINUTE)
     async create_subsidy_approve() {
 
         this.create_subsidy_approve_logger.log("√");
 
-        // 获取未执行的task
-        const tasks = await this.taskDao.get(TaskStatus.NEVER);
+        // 获取ADMIN_APPROVE_DONE的task
+        const tasks = await this.taskDao.get(TaskStatus.ADMIN_APPROVE_DONE);
 
         // 遍历tasks
         for (let i = 0; i < tasks.length; i++) {
@@ -103,10 +104,11 @@ export class AppService {
                 const result = await this.walletService.create(createWalletBatchDto);
                 begin_num = result.begin_num;
                 limit_num = result.limit_num;
+                continue;
             } else if (wallet_source === WalletSource.PICK) {
                 // 选择钱包
-                const getWalletDto = new GetWalletDto(wallet_begin_num, wallet_limit_num);
-                const result = await this.walletDao.get_address(getWalletDto);
+                const getWalletDto = new GetWalletDto(admin_id, wallet_begin_num, wallet_limit_num);
+                const result = await this.walletDao.get_address_special(getWalletDto);
                 if (result.length === 0) continue;
                 begin_num = result[0].id;
                 limit_num = result.length;
@@ -115,11 +117,11 @@ export class AppService {
             }
             if (begin_num === undefined || limit_num === undefined) continue;
 
-            // 分组
+            // 分组（钱包ids）
             const times_arr = clusters(begin_num, limit_num);
 
             // 更改task为准备中
-            await this.taskDao.update_status(task_id, TaskStatus.PREPARE_ING);
+            await this.taskDao.update_status(task_id, TaskStatus.SUBSIDY_ING);
 
             // 创建订单（准备）
             await this.transactionPrepareService.create(task_id, times_arr, token_address);
@@ -145,15 +147,15 @@ export class AppService {
         this.execute_subsidy_logger.log("√");
 
         // 读取任务列表
-        const result = await this.taskDao.get(TaskStatus.PREPARE_ING);
+        const tasks = await this.taskDao.get(TaskStatus.SUBSIDY_ING);
 
         // nonce_mapping
         const nonce_mapping: { [key: string]: bigint } = {};
 
         // 遍历tasks
-        for (let i = 0; i < result.length; i++) {
+        for (let i = 0; i < tasks.length; i++) {
 
-            const task = result[i];
+            const task = tasks[i];
             const {
                 id: task_id,
                 subsidy_gas_max,
@@ -172,7 +174,7 @@ export class AppService {
 
             // 如果prepare_list长度为0，更改task为打款完成，进入下一次循环
             if (prepare_list.length === 0) {
-                await this.taskDao.update_status(task_id, TaskStatus.PREPARE_DONE);
+                await this.taskDao.update_status(task_id, TaskStatus.SUBSIDY_DONE);
                 continue;
             }
 
@@ -184,10 +186,9 @@ export class AppService {
             for (let j = 0; j < prepare_list.length; j++) {
 
                 const {id, begin_num, limit_num, gas_status, token_status, token_address} = prepare_list[j];
-                const getWalletDto = new GetWalletDto(begin_num, limit_num);
 
                 // 空投转账参数组装
-                const accounts: Array<string> = await this.walletDao.get_address(getWalletDto).then((list) => list.map((item) => item.address));
+                const accounts: Array<string> = await this.walletDao.get_address(begin_num, limit_num).then((list) => list.map((item) => item.address));
                 const amounts: Array<string> = [];
                 let msg_value = new BigNumber(0);
                 let contract_address = "";
@@ -241,7 +242,7 @@ export class AppService {
             const {id: order_id, token_address, spender} = order;
             const {address, private_key} = order.wallet;
 
-            // 如果余额不大于0，跳过提交交易部分
+            // 如果余额不大于0，不提交授权
             const balance = await get_balance(address);
             if (balance <= 0) continue;
 
@@ -256,48 +257,10 @@ export class AppService {
     }
 
 
-    // @Cron(CronExpression.EVERY_5_MINUTES)
-    async approve_process() {
-
-        // 获取打款完成的task
-        const tasks = await this.taskDao.get(TaskStatus.PREPARE_DONE);
-
-        // 遍历tasks
-        for (let i = 0; i < tasks.length; i++) {
-
-            const task = tasks[i];
-            const {id: task_id, wallet_begin_num, wallet_limit_num} = task;
-            const {id: admin_id} = task.admin;
-
-            let token_address = "";
-            const spender = env.ROUTER_CONTRACT_ADDRESS;
-
-            // 交易类型
-            if (task.trade_type === TradeType.BUY) {
-                token_address = task.trade_pair.token1_address;
-            } else if (task.trade_type === TradeType.SELL) {
-                token_address = task.trade_pair.token0_address;
-            } else {
-                continue;
-            }
-
-            // 获取【钱包】是否授权了【使用者】【指定token】使用权
-            const getWalletDto = new GetWalletDto(wallet_begin_num, wallet_limit_num);
-            // TODO 有问题
-            const success_counts = await this.transactionApproveDao.get_success_counts(getWalletDto);
-
-            // 如果 交易成功的数量 和 limit_num 一样，更改task为授权完成
-            if (success_counts === wallet_limit_num) await this.taskDao.update_status(task_id, TaskStatus.APPROVE_DONE);
-
-        }
-
-    }
-
-
     async create_swap() {
 
         // 获取授权完成的task
-        const tasks = await this.taskDao.get(TaskStatus.APPROVE_DONE);
+        const tasks = await this.taskDao.get(TaskStatus.SUBSIDY_DONE);
 
         // 遍历task
         for (let i = 0; i < tasks.length; i++) {
@@ -340,8 +303,7 @@ export class AppService {
             if (env.SWAP_SWITCH !== "1") continue;
 
             // 获取用户
-            const getWalletDto = new GetWalletDto(wallet_begin_num, wallet_limit_num);
-            const users = await this.walletDao.get_address(getWalletDto);
+            const users = await this.walletDao.get_address(wallet_begin_num, wallet_limit_num);
 
             // 生成订单（swap）
             let order_list = [];
@@ -430,7 +392,7 @@ export class AppService {
     async create_collect() {
 
         // 获取到达归集时间的task
-        const tasks = await this.taskDao.get(TaskStatus.PREPARE_DONE);
+        const tasks = await this.taskDao.get(TaskStatus.SUBSIDY_DONE);
 
         // 遍历tasks
         for (let i = 0; i < tasks.length; i++) {

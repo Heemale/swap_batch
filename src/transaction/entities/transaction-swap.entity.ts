@@ -1,4 +1,4 @@
-import {Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn, Unique} from 'typeorm';
+import {Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn} from 'typeorm';
 import {WalletEntity} from '../../wallet/entities/wallet.entity';
 import {TaskEntity} from './task.entity';
 import {TransactionBaseEntity} from "../../common/entity/transaction-base.entity";

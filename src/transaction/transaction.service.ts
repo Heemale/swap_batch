@@ -1,4 +1,4 @@
-import { Injectable} from '@nestjs/common';
+import {Injectable} from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 
 import {env} from '../config';
@@ -11,7 +11,7 @@ import {
     swap,
     to_wei,
 } from '../web3';
-import { timestamp} from '../common/util';
+import {timestamp} from '../common/util';
 
 import {TransactionSwapDao} from './dao/transaction-swap.dao';
 import {SwapDto} from '../web3/dto/swap.dto';
@@ -45,7 +45,9 @@ export class TransactionService {
         }
 
         const orders = await this.transactionSwapDao.get(type);
-        let nonce_mapping = {};
+
+        // nonce_mapping
+        const nonce_mapping: { [key: string]: bigint } = {};
 
         for (let i = 0; i < orders.length; i++) {
 
@@ -66,16 +68,10 @@ export class TransactionService {
             // 转入token数量，用于计算市值（必填）
             if (token_in_amount === 0) continue;
 
-            // 计算nonce
-            let nonce;
-            if (nonce_mapping[wallet_address] !== undefined) {
-                // 如果nonce_mapping中存在当前地址的键值对，则使用保存的nonce
-                nonce = nonce_mapping[wallet_address] + 1;
-            } else {
-                // 否则获取nonce，并添加到nonce_mapping中
-                nonce = await get_nonce(wallet_address);
+            // 如果未查询过nonce
+            if (!(wallet_address.toLowerCase() in nonce_mapping)) {
+                nonce_mapping[wallet_address.toLowerCase()] = await get_nonce(wallet_address);
             }
-            nonce_mapping[wallet_address] = nonce;
 
             // 获取市值
             const getAmountsOutDto = new GetAmountsOutDto(token_in_amount, [token_in, token_out], env.ROUTER_CONTRACT_ADDRESS);
@@ -89,7 +85,7 @@ export class TransactionService {
             const amount_in = await to_wei(order.amount_in);
             const deadline = (timestamp() + 86400 * 60 * 1000);
             let swapDto = new SwapDto(amount_in, 0, [token_in, token_out], wallet_address, deadline, env.ROUTER_CONTRACT_ADDRESS);
-            let transactionDto = new TransactionDto(wallet_address, env.ROUTER_CONTRACT_ADDRESS, new BigNumber(0).valueOf(), '', order.wallet.private_key, nonce);
+            let transactionDto = new TransactionDto(wallet_address, env.ROUTER_CONTRACT_ADDRESS, new BigNumber(0).valueOf(), '', order.wallet.private_key, nonce_mapping[wallet_address.toLowerCase()]++);
 
             // 提交交易
             this.swap(swapDto, transactionDto, order_id);

@@ -1,7 +1,7 @@
 import {
     Entity,
     Column,
-    PrimaryGeneratedColumn, Unique,
+    PrimaryGeneratedColumn,
 } from 'typeorm';
 import {TransactionBaseEntity} from "../../common/entity/transaction-base.entity";
 

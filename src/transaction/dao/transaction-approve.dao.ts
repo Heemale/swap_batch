@@ -80,18 +80,18 @@ export class TransactionApproveDao {
             .getMany();
     }
 
-    async get_success_counts(getWalletDto: GetWalletDto) {
-
-        const {admin_id, begin_num, limit_num} = getWalletDto;
-
-        return await this.dataSource.getRepository(TransactionApproveEntity)
-            .createQueryBuilder('approve_orders')
-            .leftJoinAndSelect('approve_orders.wallet', 'wallet')
-            .where('approve_orders.wallet.admin_id = :admin_id', {admin_id})
-            .andWhere('approve_orders.status = :status', {status: StatusEnum.CHECK_SUCCESS})
-            .andWhere('approve_orders.wallet.admin_wallet_num >= :begin_num', {begin_num})
-            .limit(limit_num)
-            .getCount();
-    }
+    // async get_success_counts(getWalletDto: GetWalletDto) {
+    //
+    //     const {admin_id, begin_num, limit_num} = getWalletDto;
+    //
+    //     return await this.dataSource.getRepository(TransactionApproveEntity)
+    //         .createQueryBuilder('approve_orders')
+    //         .leftJoinAndSelect('approve_orders.wallet', 'wallet')
+    //         .where('approve_orders.wallet.admin_id = :admin_id', {admin_id})
+    //         .andWhere('approve_orders.status = :status', {status: StatusEnum.CHECK_SUCCESS})
+    //         .andWhere('approve_orders.wallet.admin_wallet_num >= :begin_num', {begin_num})
+    //         .limit(limit_num)
+    //         .getCount();
+    // }
 
 }

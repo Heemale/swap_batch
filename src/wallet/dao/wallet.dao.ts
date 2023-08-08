@@ -41,9 +41,20 @@ export class WalletDao {
         }
     }
 
-    get_address = async (getWalletDto: GetWalletDto): Promise<Array<WalletEntity>> => {
+    get_address_special = async (getWalletDto: GetWalletDto): Promise<Array<WalletEntity>> => {
 
-        const {begin_num, limit_num} = getWalletDto;
+        const {admin_id, begin_num, limit_num} = getWalletDto;
+
+        return await this.dataSource
+            .getRepository(WalletEntity)
+            .createQueryBuilder('wallet')
+            .where('admin_id = :admin_id', {admin_id})
+            .andWhere('admin_special_num >= :begin_num', {begin_num})
+            .limit(limit_num)
+            .getMany();
+    }
+
+    get_address = async (begin_num, limit_num): Promise<Array<WalletEntity>> => {
 
         return await this.dataSource
             .getRepository(WalletEntity)

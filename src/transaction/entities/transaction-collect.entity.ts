@@ -3,7 +3,7 @@ import {
     Column,
     PrimaryGeneratedColumn,
     ManyToOne,
-    JoinColumn, Unique,
+    JoinColumn
 } from 'typeorm';
 import {WalletEntity} from '../../wallet/entities/wallet.entity';
 import {TransactionBaseEntity} from "../../common/entity/transaction-base.entity";

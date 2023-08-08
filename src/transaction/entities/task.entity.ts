@@ -1,10 +1,9 @@
-import {Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, Unique} from 'typeorm';
+import {Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn} from 'typeorm';
 import {TransactionSwapEntity} from './transaction-swap.entity';
 import {TaskStatus, TradeType, WalletSource} from "../../common/enum";
 import {TradePairEntity} from "./trade-pair.entity";
 import {TransactionPrepareEntity} from "./transaction-prepare.entity";
 import {WalletEntity} from "../../wallet/entities/wallet.entity";
-import {TransactionApproveEntity} from "./transaction-approve.entity";
 import {AdminEntity} from "./admin.entity";
 import {BaseEntity} from "../../common/entity/base.entity";
 import {TransactionCollectEntity} from "./transaction-collect.entity";
@@ -25,7 +24,7 @@ export class TaskEntity extends BaseEntity {
         type: 'enum',
         enum: TaskStatus,
         default: TaskStatus.NEVER,
-        comment: '状态:0=未执行,1=准备中,2=准备完成,3=swap中,4=swap完成,5=归集中,6=归集完成',
+        comment: '状态:0=未执行,1=管理员授权中,2=管理员授权完成,3=打款中,4=打款完成,5=swap中,6=swap完成,7=归集中,8=归集完成',
     })
     status: TaskStatus;
 
@@ -39,7 +38,7 @@ export class TaskEntity extends BaseEntity {
     @Column({comment: '创建钱包数量', default: null, nullable: true})
     wallet_create_counts: number;
 
-    @Column({comment: '选择钱包起始编号', default: null, nullable: true})
+    @Column({comment: '选择钱包起始专用编号', default: null, nullable: true})
     wallet_begin_num: number;
 
     @Column({comment: '选择钱包数量', default: null, nullable: true})
@@ -85,11 +84,9 @@ export class TaskEntity extends BaseEntity {
     @Column({comment: '是否一次性交易', type: 'tinyint', default: 0, nullable: false})
     disposable_switch: number;
 
-    // TODO
     @Column({comment: '是否密集交易', type: 'tinyint', default: 0, nullable: false})
     dense_switch: number;
 
-    // TODO
     @Column({comment: '是否区间交易', type: 'tinyint', default: 1, nullable: false})
     range_switch: number;
 
@@ -113,9 +110,6 @@ export class TaskEntity extends BaseEntity {
 
     @OneToMany(() => TransactionPrepareEntity, (prepare_order) => prepare_order.task)
     prepare_orders: TransactionPrepareEntity[];
-
-    @OneToMany(() => TransactionApproveEntity, (approve_order) => approve_order.task)
-    approve_orders: TransactionApproveEntity[];
 
     @OneToMany(() => TransactionSwapEntity, (swap_order) => swap_order.task)
     swap_orders: TransactionSwapEntity[];

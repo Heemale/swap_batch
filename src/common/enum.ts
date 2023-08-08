@@ -13,14 +13,15 @@ export enum TradeType {
 }
 
 export enum TaskStatus {
-    NEVER = '0', //未执行
-    PREPARE_ING = '1', // 准备中
-    PREPARE_DONE = '2', // 准备完毕
-    APPROVE_DONE = '3', // 授权完毕
-    SWAP_ING = '4', // swap中
-    SWAP_DONE = '5', // swap完毕
-    COLLECT_ING = '6', // 归集中
-    COLLECT_DONE = '7', // 归集完毕
+    NEVER = '0', // 未执行
+    ADMIN_APPROVE_ING = '1', // 管理员授权中
+    ADMIN_APPROVE_DONE = '2', // 管理员授权完毕
+    SUBSIDY_ING = '3', // 打款中
+    SUBSIDY_DONE = '4', // 打款完毕
+    SWAP_ING = '5', // swap中
+    SWAP_DONE = '6', // swap完毕
+    COLLECT_ING = '7', // 归集中
+    COLLECT_DONE = '8', // 归集完毕
 }
 
 export enum WalletSource {
