@@ -3,7 +3,7 @@ import {timestamp} from '../../common/util';
 import {InjectRepository} from "@nestjs/typeorm";
 import {DataSource, Repository} from "typeorm";
 import {TaskEntity} from "../entities/task.entity";
-import {StatusEnum, SwitchEnum, TaskStatus} from "../../common/enum";
+import {SwitchEnum, TaskStatus} from "../../common/enum";
 
 @Injectable()
 export class TaskDao {

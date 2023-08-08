@@ -5,7 +5,6 @@ import {timestamp} from '../../common/util';
 import {TransactionApproveEntity} from '../entities/transaction-approve.entity';
 import {ApproveUpdateDto} from '../dto/approve/approve-update.dto';
 import {StatusEnum} from "../../common/enum";
-import {GetWalletDto} from "../../wallet/dto/get-wallet.dto";
 
 @Injectable()
 export class TransactionApproveDao {

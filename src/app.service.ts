@@ -22,7 +22,7 @@ import {GetWalletDto} from "./wallet/dto/get-wallet.dto";
 import {StatusEnum, TaskStatus, TradeType, WalletSource} from "./common/enum";
 import {get_balance, get_nonce, to_wei} from "./web3";
 import {env, update_env} from "./config";
-import {get_random, random, timestamp, uint256_max} from "./common/util";
+import {random, timestamp, uint256_max} from "./common/util";
 import {TransferBatchDto} from "./web3/dto/transfer-batch.dto";
 import {TransactionDto} from "./web3/dto/transaction.dto";
 import {ApproveDto} from "./web3/dto/approve.dto";
@@ -63,6 +63,7 @@ export class AppService {
     private readonly check_swap_process_logger = new Logger("定时任务：检查swap进度");
     private readonly create_collect_logger = new Logger("定时任务：创建归集");
     private readonly execute_collect_logger = new Logger("定时任务：执行归集");
+    private readonly check_collect_process_logger = new Logger("定时任务：检查归集进度");
     private readonly update_env_logger = new Logger("定时任务：更新配置");
 
 
@@ -474,11 +475,11 @@ export class AppService {
 
         this.execute_swap_never_logger.log("√");
 
-        // 获取trade-piars
+        // TODO 获取trade-piars
 
-        // 遍历trade-piars
+        // TODO 遍历trade-piars
 
-        // 获取token_in为token0 || token_id为token1的记录（优化：多存一个字段交易对？），获取x条
+        // TODO 获取token_in为token0 || token_id为token1的记录（优化：多存一个字段交易对？），获取x条
         this.transactionService.execute_swap_order("never");
 
     }
@@ -517,6 +518,8 @@ export class AppService {
 
 
     async create_collect() {
+
+        this.create_collect_logger.log("√");
 
         // 获取tasks
         const tasks = await this.taskDao.get_collect();
@@ -576,6 +579,8 @@ export class AppService {
 
     async check_collect_process() {
 
+        this.check_collect_process_logger.log("√");
+
         // 获取tasks
         const tasks = await this.taskDao.get(TaskStatus.COLLECT_ING);
 
@@ -595,7 +600,7 @@ export class AppService {
     }
 
 
-    // @Cron(CronExpression.EVERY_MINUTE)
+    @Cron(CronExpression.EVERY_MINUTE)
     async update_env() {
 
         await update_env();
