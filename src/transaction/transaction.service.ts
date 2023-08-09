@@ -18,7 +18,6 @@ import {SwapDto} from '../web3/dto/swap.dto';
 import {TransactionDto} from '../web3/dto/transaction.dto';
 import {StatusEnum,} from '../common/enum';
 import {SwapUpdateDto} from './dto/swap/swap-update.dto';
-import {TaskDao} from "./dao/task.dao";
 import {GetAmountsOutDto} from "../web3/dto/get-amounts-out.dto";
 import {WalletDao} from "../wallet/dao/wallet.dao";
 
@@ -30,20 +29,15 @@ export class TransactionService {
     constructor(
         private readonly walletDao: WalletDao,
         private readonly transactionSwapDao: TransactionSwapDao,
-        private readonly taskDao: TaskDao,
     ) {
     }
 
     execute_swap_order = async (type: "never" | "failed") => {
 
-        // swap总开关关闭
-        if (env.SWAP_SWITCH === "0") {
-            return;
-        } else {
-            // swap开关异常
-            if (env.SWAP_SWITCH !== "1") return;
-        }
+        // swap开关
+        if (env.SWAP_SWITCH !== "1") return;
 
+        // TODO 根据交易对来提交交易
         const orders = await this.transactionSwapDao.get(type);
 
         // nonce_mapping
