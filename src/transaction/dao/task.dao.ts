@@ -62,8 +62,10 @@ export class TaskDao {
     get_collect = async () => {
         return await this.dataSource.getRepository(TaskEntity)
             .createQueryBuilder('tasks')
-            .where('collecttime <= :timestamp', {timestamp: timestamp()})
-            .andWhere('(status != :status1 AND status != status2)', {
+            .leftJoinAndSelect('tasks.admin', 'admin')
+            .leftJoinAndSelect('tasks.trade_pair', 'trade_pair')
+            .where('tasks.collecttime <= :timestamp', {timestamp: timestamp()})
+            .andWhere('(tasks.status != :status1 AND tasks.status != :status2)', {
                 status1: TaskStatus.COLLECT_ING,
                 status2: TaskStatus.COLLECT_DONE
             })

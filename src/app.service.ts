@@ -495,6 +495,7 @@ export class AppService {
     }
 
 
+    // @Cron(CronExpression.EVERY_3_HOURS)
     async check_swap_process() {
 
         this.check_swap_process_logger.log("√")
@@ -506,17 +507,26 @@ export class AppService {
         for (let i = 0; i < tasks.length; i++) {
 
             const task = tasks[i];
-            const {id: task_id, wallet_limit_num} = task;
+            const {id: task_id, wallet_source, wallet_create_counts, wallet_limit_num} = task;
 
             // 根据task_id获取swap成功次数
             const success_counts = await this.transactionSwapDao.get_success_counts(task_id);
+            let total_counts;
+
+            if (wallet_source === WalletSource.CREATE) {
+                total_counts = wallet_create_counts;
+            } else if (wallet_source === WalletSource.PICK) {
+                total_counts = wallet_limit_num;
+            } else {
+                continue;
+            }
 
             // 如果成功次数等于参与的账户数，更新状态
             if (success_counts === wallet_limit_num) await this.taskDao.update_status(task_id, TaskStatus.SWAP_DONE);
         }
     }
 
-
+    @Cron(CronExpression.EVERY_MINUTE)
     async create_collect() {
 
         this.create_collect_logger.log("√");
@@ -533,7 +543,7 @@ export class AppService {
 
             const {id: admin_id} = task.admin;
 
-            // 更改task为归集中
+            // 更改task状态
             if (collecttime <= timestamp()) await this.taskDao.update_status(task_id, TaskStatus.COLLECT_ING);
 
             let token_address = "";
@@ -557,14 +567,11 @@ export class AppService {
             // 创建归集记录
             const collectBatchDto = new CollectBatchDto(task_id, begin_num, limit_num, [token_address])
             await this.transactionCollectService.create_collect_order(collectBatchDto);
-
-            // 更改task状态
-            await this.taskDao.update_status(task_id, TaskStatus.SWAP_ING);
         }
     }
 
 
-    // @Cron(CronExpression.EVERY_5_MINUTES)
+    @Cron(CronExpression.EVERY_MINUTE)
     async execute_collect() {
 
         this.execute_collect_logger.log("√");
@@ -577,6 +584,7 @@ export class AppService {
     }
 
 
+    @Cron(CronExpression.EVERY_3_HOURS)
     async check_collect_process() {
 
         this.check_collect_process_logger.log("√");
@@ -588,13 +596,23 @@ export class AppService {
         for (let i = 0; i < tasks.length; i++) {
 
             const task = tasks[i];
-            const {id: task_id, wallet_limit_num} = task;
+            const {id: task_id, wallet_source, wallet_create_counts, wallet_limit_num} = task;
 
             // 根据task_id获取collect成功次数
             const success_counts = await this.transactionCollectDao.get_success_counts(task_id);
 
+            let total_counts;
+
+            if (wallet_source === WalletSource.CREATE) {
+                total_counts = wallet_create_counts;
+            } else if (wallet_source === WalletSource.PICK) {
+                total_counts = wallet_limit_num;
+            } else {
+                continue;
+            }
+
             // 如果成功次数等于参与的账户数，更新状态
-            if (success_counts === wallet_limit_num) await this.taskDao.update_status(task_id, TaskStatus.SWAP_DONE);
+            if (success_counts === total_counts) await this.taskDao.update_status(task_id, TaskStatus.COLLECT_DONE);
 
         }
     }
@@ -603,22 +621,22 @@ export class AppService {
     @Cron(CronExpression.EVERY_MINUTE)
     async update_env() {
 
+        this.update_env_logger.log("√");
+
         await update_env();
 
         // 配置变更
-        if (env.CREATE_TIME !== env.CREATE_TIME_LAST) {
-
-            this.update_env_logger.log("更新扫描task时间");
-
-            // clearInterval(this.create_swap);
-            //
-            // this.create_swap = setInterval(() => {
-            //     this.monitor_task_swap_logger.log("√");
-            //     this.transactionService.create_swap_from_task();
-            // }, 1000 * env.CREATE_TIME);
-
-            env.CREATE_TIME_LAST = env.CREATE_TIME;
-        }
+        // if (env.CREATE_TIME !== env.CREATE_TIME_LAST) {
+        //
+        //     // clearInterval(this.create_swap);
+        //     //
+        //     // this.create_swap = setInterval(() => {
+        //     //     this.monitor_task_swap_logger.log("√");
+        //     //     this.transactionService.create_swap_from_task();
+        //     // }, 1000 * env.CREATE_TIME);
+        //
+        //     env.CREATE_TIME_LAST = env.CREATE_TIME;
+        // }
 
     }
 

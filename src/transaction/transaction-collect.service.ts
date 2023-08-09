@@ -160,6 +160,7 @@ export class TransactionCollectService {
                 receipt = await web3.eth.sendSignedTransaction(signed.rawTransaction)
                     .on('transactionHash', (hash) => {
                         collectUpdateDto.hash = hash;
+                        collectUpdateDto.status = StatusEnum.PENDING;
                         this.collectTransactionDao.update(collectUpdateDto);
                     });
             } catch (e) {
