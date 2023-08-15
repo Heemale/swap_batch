@@ -4,10 +4,10 @@ import {
     PrimaryGeneratedColumn, Unique, ManyToOne, JoinColumn,
 } from 'typeorm';
 import {TransactionBaseEntity} from "../../common/entity/transaction-base.entity";
-import {AdminEntity} from "./admin.entity";
+import {AdminEntity} from "../../admin/entities/admin.entity";
 
 @Entity('fa_transaction_approve_admin')
-@Unique('unique_token_wallet', ['token_address', 'spender', 'admin'])
+@Unique(['token_address', 'spender', 'admin'])
 export class TransactionApproveAdminEntity extends TransactionBaseEntity {
 
     @PrimaryGeneratedColumn({comment: '授权记录ID'})
@@ -23,7 +23,7 @@ export class TransactionApproveAdminEntity extends TransactionBaseEntity {
     spender: string;
 
     @ManyToOne(() => AdminEntity, (admin) => admin.approve_orders)
-    @JoinColumn({name: 'admin_id'})
+    @JoinColumn({name: 'admin'})
     admin: AdminEntity;
 
 }

@@ -1,6 +1,6 @@
 import {Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn} from 'typeorm';
 import {WalletEntity} from '../../wallet/entities/wallet.entity';
-import {TaskEntity} from './task.entity';
+import {TaskEntity} from '../../task/entities/task.entity';
 import {TransactionBaseEntity} from "../../common/entity/transaction-base.entity";
 
 @Entity('fa_transaction_swap')
@@ -40,11 +40,11 @@ export class TransactionSwapEntity extends TransactionBaseEntity {
     failed_counts: number;
 
     @ManyToOne(() => WalletEntity, (wallet) => wallet.swap_orders)
-    @JoinColumn({name: 'wallet_id'})
+    @JoinColumn({name: 'wallet'})
     wallet: WalletEntity;
 
     @ManyToOne(() => TaskEntity, (task) => task.swap_orders)
-    @JoinColumn({name: 'task_id'})
+    @JoinColumn({name: 'task'})
     task: TaskEntity;
 
 }

@@ -1,15 +1,21 @@
 import {Injectable} from '@nestjs/common';
 import {CreateWalletBatchDto} from "./dto/create-wallet-batch.dto";
-import {WalletDao} from "./dao/wallet.dao";
+import {WalletDao} from "./wallet.dao";
 import {CreateWalletDto} from "./dto/create-wallet.dto";
 import {generate_wallet, timestamp} from "../common/util";
+import {TypeOrmCrudService} from "@nestjsx/crud-typeorm";
+import {WalletEntity} from "./entities/wallet.entity";
+import {InjectRepository} from "@nestjs/typeorm";
 
 @Injectable()
-export class WalletService {
+export class WalletService extends TypeOrmCrudService<WalletEntity> {
+
 
     constructor(
-        private readonly walletDao: WalletDao,
+        @InjectRepository(WalletEntity) repo,
+        private readonly walletDao: WalletDao
     ) {
+        super(repo);
     }
 
     create = async (createWalletBatchDto: CreateWalletBatchDto) => {

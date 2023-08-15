@@ -7,7 +7,7 @@ import {
 } from 'typeorm';
 import {WalletEntity} from '../../wallet/entities/wallet.entity';
 import {TransactionBaseEntity} from "../../common/entity/transaction-base.entity";
-import {TaskEntity} from "./task.entity";
+import {TaskEntity} from "../../task/entities/task.entity";
 
 @Entity('fa_transaction_collect')
 export class TransactionCollectEntity extends TransactionBaseEntity {
@@ -22,11 +22,11 @@ export class TransactionCollectEntity extends TransactionBaseEntity {
     token_address: string;
 
     @ManyToOne(() => WalletEntity, (wallet) => wallet.collect_orders)
-    @JoinColumn({name: 'wallet_id'})
+    @JoinColumn({name: 'wallet'})
     wallet: WalletEntity;
 
     @ManyToOne(() => TaskEntity, (task) => task.collect_orders)
-    @JoinColumn({name: 'task_id'})
+    @JoinColumn({name: 'task'})
     task:TaskEntity;
 
 }

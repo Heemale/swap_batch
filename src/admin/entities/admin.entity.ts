@@ -1,15 +1,11 @@
 import {Column, Entity, Index, OneToMany, PrimaryGeneratedColumn} from "typeorm";
-import {TaskEntity} from "./task.entity";
-import {TransactionApproveAdminEntity} from "./transaction-approve-admin.entity";
+import {TaskEntity} from "../../task/entities/task.entity";
+import {TransactionApproveAdminEntity} from "../../transaction/entities/transaction-approve-admin.entity";
 
 @Entity("fa_admin")
 export class AdminEntity {
-    @PrimaryGeneratedColumn({
-        type: "int",
-        name: "id",
-        comment: "ID",
-        unsigned: true,
-    })
+
+    @PrimaryGeneratedColumn({comment: '管理员ID'})
     id: number;
 
     @Index("username", {unique: true})

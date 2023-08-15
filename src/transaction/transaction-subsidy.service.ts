@@ -14,7 +14,7 @@ import {TransferBatchDto} from "../web3/dto/transfer-batch.dto";
 import {TransactionSubsidyDao} from "./dao/transaction-subsidy.dao";
 import {SubsidyUpdateDto} from "./dto/subsidy/subsidy-update.dto";
 import {timesType} from "../common/interface";
-import {WalletDao} from "../wallet/dao/wallet.dao";
+import {WalletDao} from "../wallet/wallet.dao";
 import {TransactionPrepareDao} from "./dao/transaction-prepare.dao";
 import BigNumber from "bignumber.js";
 

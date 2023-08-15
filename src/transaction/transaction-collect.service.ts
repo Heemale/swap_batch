@@ -1,5 +1,4 @@
 import {Injectable} from '@nestjs/common';
-import {v4 as uuid} from 'uuid';
 import BigNumber from 'bignumber.js';
 
 import {env} from '../config';
@@ -19,19 +18,24 @@ import {StatusEnum} from '../common/enum';
 import {TransactionDto} from '../web3/dto/transaction.dto';
 import {TransferDto} from '../web3/dto/transfer.dto';
 import {CollectUpdateDto} from './dto/collect/collect-update.dto';
-import {CollectBatchDto} from './dto/collect/batch/collect-batch.dto';
+import {CollectBatchDto} from './dto/collect/collect-batch.dto';
 import {TransactionCollectDao} from './dao/transaction-collect.dao';
-import {WalletDao} from "../wallet/dao/wallet.dao";
+import {WalletDao} from "../wallet/wallet.dao";
+import {TypeOrmCrudService} from "@nestjsx/crud-typeorm";
+import {TransactionCollectEntity} from "./entities/transaction-collect.entity";
+import {InjectRepository} from "@nestjs/typeorm";
 
 export const Web3 = require('web3');
 
 @Injectable()
-export class TransactionCollectService {
+export class TransactionCollectService extends TypeOrmCrudService<TransactionCollectEntity> {
 
     constructor(
+        @InjectRepository(TransactionCollectEntity) repo,
         private readonly walletDao: WalletDao,
         private readonly collectTransactionDao: TransactionCollectDao,
     ) {
+        super(repo);
     }
 
     create_collect_order = async (collectBatchDto: CollectBatchDto) => {

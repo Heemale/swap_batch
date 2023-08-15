@@ -14,9 +14,9 @@ async function bootstrap() {
 
     // 设置前缀、Pipe、异常过滤、数据转化
     app.setGlobalPrefix('api/v1/');
-    app.useGlobalPipes(new ValidationPipe({forbidUnknownValues: false}));
-    app.useGlobalFilters(new HttpExceptionFilter());
-    app.useGlobalInterceptors(new TransformInterceptor());
+    // app.useGlobalPipes(new ValidationPipe({forbidUnknownValues: false}));
+    // app.useGlobalFilters(new HttpExceptionFilter());
+    // app.useGlobalInterceptors(new TransformInterceptor());
 
     // 设置swagger文档
     const config = new DocumentBuilder()

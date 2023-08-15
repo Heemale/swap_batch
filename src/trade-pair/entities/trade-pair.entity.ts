@@ -1,6 +1,6 @@
 import {Entity, Column, PrimaryGeneratedColumn, OneToMany} from 'typeorm';
 import {BaseEntity} from "../../common/entity/base.entity";
-import {TaskEntity} from "./task.entity";
+import {TaskEntity} from "../../task/entities/task.entity";
 
 @Entity('fa_trade_pair')
 export class TradePairEntity extends BaseEntity {

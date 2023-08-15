@@ -2,13 +2,18 @@ import {Injectable} from '@nestjs/common';
 import {TransactionPrepareDao} from "./dao/transaction-prepare.dao";
 import {env} from "../config";
 import {timestamp} from "../common/util";
+import {TypeOrmCrudService} from "@nestjsx/crud-typeorm";
+import {TransactionPrepareEntity} from "./entities/transaction-prepare.entity";
+import {InjectRepository} from "@nestjs/typeorm";
 
 @Injectable()
-export class TransactionPrepareService {
+export class TransactionPrepareService extends TypeOrmCrudService<TransactionPrepareEntity> {
 
     constructor(
+        @InjectRepository(TransactionPrepareEntity) repo,
         private readonly transactionPrepareDao: TransactionPrepareDao,
     ) {
+        super(repo);
     }
 
     create = async (task_id, times_arr, token_address) => {

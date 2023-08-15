@@ -1,20 +1,17 @@
 import {Injectable, Logger} from '@nestjs/common';
-import {Cron, CronExpression} from "@nestjs/schedule";
 import BigNumber from "bignumber.js";
 
-import {TaskDao} from "./transaction/dao/task.dao";
-import {WalletDao} from "./wallet/dao/wallet.dao";
+import {TaskDao} from "./task/task.dao";
+import {WalletDao} from "./wallet/wallet.dao";
 import {TransactionSwapDao} from "./transaction/dao/transaction-swap.dao";
 import {TransactionApproveDao} from "./transaction/dao/transaction-approve.dao";
 import {TransactionCollectDao} from "./transaction/dao/transaction-collect.dao";
-import {TransactionSubsidyDao} from "./transaction/dao/transaction-subsidy.dao";
 import {TransactionPrepareDao} from "./transaction/dao/transaction-prepare.dao";
 
 import {WalletService} from "./wallet/wallet.service";
 import {clusters, generate_approve_order, TransactionSubsidyService} from "./transaction/transaction-subsidy.service";
 import {TransactionCollectService} from "./transaction/transaction-collect.service";
 import {TransactionApproveService} from "./transaction/transaction-approve.service";
-import {TransactionService} from "./transaction/transaction.service";
 import {TransactionPrepareService} from "./transaction/transaction-prepare.service";
 
 import {GetWalletDto} from "./wallet/dto/get-wallet.dto";
@@ -27,16 +24,16 @@ import {TransferBatchDto} from "./web3/dto/transfer-batch.dto";
 import {TransactionDto} from "./web3/dto/transaction.dto";
 import {ApproveDto} from "./web3/dto/approve.dto";
 import {SwapCreateDto} from "./transaction/dto/swap/swap-create.dto";
-import {CollectBatchDto} from "./transaction/dto/collect/batch/collect-batch.dto";
+import {CollectBatchDto} from "./transaction/dto/collect/collect-batch.dto";
 import {CreateWalletBatchDto} from "./wallet/dto/create-wallet-batch.dto";
 import {TransactionApproveAdminDao} from "./transaction/dao/transaction-approve-admin.dao";
+import {TransactionSwapService} from "./transaction/transaction-swap.service";
 
 @Injectable()
 export class AppService {
 
     constructor(
         private readonly walletDao: WalletDao,
-        private readonly transactionSubsidyDao: TransactionSubsidyDao,
         private readonly transactionApproveDao: TransactionApproveDao,
         private readonly transactionApproveAdminDao: TransactionApproveAdminDao,
         private readonly transactionCollectDao: TransactionCollectDao,
@@ -47,7 +44,7 @@ export class AppService {
         private readonly transactionSubsidyService: TransactionSubsidyService,
         private readonly transactionApproveService: TransactionApproveService,
         private readonly transactionCollectService: TransactionCollectService,
-        private readonly transactionService: TransactionService,
+        private readonly transactionSwapService: TransactionSwapService,
         private readonly transactionPrepareService: TransactionPrepareService,
     ) {
     }
@@ -67,7 +64,7 @@ export class AppService {
     private readonly update_env_logger = new Logger("定时任务：更新配置");
 
 
-    @Cron(CronExpression.EVERY_MINUTE)
+    // @Cron(CronExpression.EVERY_MINUTE)
     async create_approve_admin() {
 
         this.create_approve_admin_logger.log("√");
@@ -121,7 +118,7 @@ export class AppService {
     }
 
 
-    @Cron(CronExpression.EVERY_MINUTE)
+    // @Cron(CronExpression.EVERY_MINUTE)
     async execute_approve_admin() {
 
         this.execute_approve_admin_logger.log("√");
@@ -152,7 +149,7 @@ export class AppService {
     }
 
 
-    @Cron(CronExpression.EVERY_MINUTE)
+    // @Cron(CronExpression.EVERY_MINUTE)
     async create_subsidy_approve() {
 
         this.create_subsidy_approve_logger.log("√");
@@ -229,7 +226,7 @@ export class AppService {
     };
 
 
-    @Cron(CronExpression.EVERY_MINUTE)
+    // @Cron(CronExpression.EVERY_MINUTE)
     async execute_subsidy() {
 
         this.execute_subsidy_logger.log("√");
@@ -315,7 +312,7 @@ export class AppService {
     }
 
 
-    @Cron(CronExpression.EVERY_MINUTE)
+    // @Cron(CronExpression.EVERY_MINUTE)
     async execute_approve() {
 
         this.execute_approve_logger.log("√");
@@ -345,7 +342,7 @@ export class AppService {
     }
 
 
-    @Cron(CronExpression.EVERY_MINUTE)
+    // @Cron(CronExpression.EVERY_MINUTE)
     async create_swap() {
 
         this.create_swap_logger.log("√");
@@ -470,7 +467,7 @@ export class AppService {
     }
 
 
-    @Cron(CronExpression.EVERY_MINUTE)
+    // @Cron(CronExpression.EVERY_MINUTE)
     async execute_swap_never() {
 
         this.execute_swap_never_logger.log("√");
@@ -480,17 +477,17 @@ export class AppService {
         // TODO 遍历trade-piars
 
         // TODO 获取token_in为token0 || token_id为token1的记录（优化：多存一个字段交易对？），获取x条
-        this.transactionService.execute_swap_order("never");
+        this.transactionSwapService.execute_swap_order("never");
 
     }
 
 
-    @Cron(CronExpression.EVERY_MINUTE)
+    // @Cron(CronExpression.EVERY_MINUTE)
     async execute_swap_failed() {
 
         this.execute_swap_failed_logger.log("√");
 
-        this.transactionService.execute_swap_order("failed");
+        this.transactionSwapService.execute_swap_order("failed");
 
     }
 
@@ -526,7 +523,7 @@ export class AppService {
         }
     }
 
-    @Cron(CronExpression.EVERY_MINUTE)
+    // @Cron(CronExpression.EVERY_MINUTE)
     async create_collect() {
 
         this.create_collect_logger.log("√");
@@ -571,7 +568,7 @@ export class AppService {
     }
 
 
-    @Cron(CronExpression.EVERY_MINUTE)
+    // @Cron(CronExpression.EVERY_MINUTE)
     async execute_collect() {
 
         this.execute_collect_logger.log("√");
@@ -584,7 +581,7 @@ export class AppService {
     }
 
 
-    @Cron(CronExpression.EVERY_3_HOURS)
+    // @Cron(CronExpression.EVERY_3_HOURS)
     async check_collect_process() {
 
         this.check_collect_process_logger.log("√");
@@ -618,7 +615,7 @@ export class AppService {
     }
 
 
-    @Cron(CronExpression.EVERY_MINUTE)
+    // @Cron(CronExpression.EVERY_MINUTE)
     async update_env() {
 
         this.update_env_logger.log("√");

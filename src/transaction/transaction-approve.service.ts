@@ -8,18 +8,23 @@ import {ApproveDto} from "../web3/dto/approve.dto";
 import {ApproveUpdateDto} from "./dto/approve/approve-update.dto";
 import {TransactionApproveAdminDao} from "./dao/transaction-approve-admin.dao";
 import {ApproveUpdateAdminDto} from "./dto/approve/approve-update-admin.dto";
-import {WalletDao} from "../wallet/dao/wallet.dao";
+import {WalletDao} from "../wallet/wallet.dao";
+import {TypeOrmCrudService} from "@nestjsx/crud-typeorm";
+import {TransactionApproveEntity} from "./entities/transaction-approve.entity";
+import {InjectRepository} from "@nestjs/typeorm";
 
 export const Web3 = require('web3');
 
 @Injectable()
-export class TransactionApproveService {
+export class TransactionApproveService extends TypeOrmCrudService<TransactionApproveEntity> {
 
     constructor(
+        @InjectRepository(TransactionApproveEntity) repo,
         private readonly walletDao: WalletDao,
         private readonly transactionApproveDao: TransactionApproveDao,
         private readonly transactionApproveAdminDao: TransactionApproveAdminDao,
     ) {
+        super(repo);
     }
 
     approve_admin = async (approveDto: ApproveDto, transactionDto: TransactionDto, id: number) => {

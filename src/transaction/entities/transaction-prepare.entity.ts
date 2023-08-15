@@ -5,7 +5,7 @@ import {
     JoinColumn, ManyToOne,
 } from 'typeorm';
 import {StatusEnum} from "../../common/enum";
-import {TaskEntity} from "./task.entity";
+import {TaskEntity} from "../../task/entities/task.entity";
 import {BaseEntity} from "../../common/entity/base.entity";
 
 @Entity('fa_transaction_prepare')

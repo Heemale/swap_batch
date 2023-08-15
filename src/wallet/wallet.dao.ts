@@ -1,9 +1,9 @@
 import {Injectable} from '@nestjs/common';
 import {DataSource, Repository} from 'typeorm';
-import {WalletEntity} from '../entities/wallet.entity';
-import {timestamp} from "../../common/util";
-import {UpdateIntervalDto} from "../dto/update-interval.dto";
-import {GetWalletDto} from "../dto/get-wallet.dto";
+import {WalletEntity} from './entities/wallet.entity';
+import {timestamp} from "../common/util";
+import {UpdateIntervalDto} from "./dto/update-interval.dto";
+import {GetWalletDto} from "./dto/get-wallet.dto";
 import {InjectRepository} from "@nestjs/typeorm";
 
 @Injectable()
@@ -85,6 +85,13 @@ export class WalletDao {
                 updatetime: timestamp(),
             })
             .execute();
+    }
+
+    get_all = async () => {
+        return await this.dataSource
+            .getRepository(WalletEntity)
+            .createQueryBuilder('wallet')
+            .getMany();
     }
 
 }

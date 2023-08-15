@@ -10,7 +10,7 @@ import {WalletEntity} from '../../wallet/entities/wallet.entity';
 import {TransactionBaseEntity} from "../../common/entity/transaction-base.entity";
 
 @Entity('fa_transaction_approve')
-@Unique('unique_token_wallet', ['token_address', 'wallet'])
+@Unique(['token_address', 'spender', 'wallet'])
 export class TransactionApproveEntity extends TransactionBaseEntity {
 
     @PrimaryGeneratedColumn({comment: '授权记录ID'})
@@ -26,7 +26,7 @@ export class TransactionApproveEntity extends TransactionBaseEntity {
     spender: string;
 
     @ManyToOne(() => WalletEntity, (wallet) => wallet.approve_orders)
-    @JoinColumn({name: 'wallet_id'})
+    @JoinColumn({name: 'wallet'})
     wallet: WalletEntity;
 
 }
