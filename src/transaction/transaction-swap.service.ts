@@ -1,6 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import {InjectRepository} from "@nestjs/typeorm";
-import { TypeOrmCrudService } from "@nestjsx/crud-typeorm";
+import {TypeOrmCrudService} from "@nestjsx/crud-typeorm";
 import {TransactionSwapEntity} from "./entities/transaction-swap.entity";
 import {env} from "../config";
 import {
@@ -20,7 +20,7 @@ import {timestamp} from "../common/util";
 import {SwapDto} from "../web3/dto/swap.dto";
 import {TransactionDto} from "../web3/dto/transaction.dto";
 import {SwapUpdateDto} from "./dto/swap/swap-update.dto";
-import {StatusEnum} from "../common/enum";
+import {StatusEnum, SwitchEnum} from "../common/enum";
 import Web3 from "web3";
 import {WalletDao} from "../wallet/wallet.dao";
 import {TransactionSwapDao} from "./dao/transaction-swap.dao";
@@ -35,17 +35,18 @@ export class TransactionSwapService extends TypeOrmCrudService<TransactionSwapEn
         super(repo);
     }
 
-    execute_swap_order = async (type: "never" | "failed") => {
+    execute_swap_order = async (type: "never" | "failed", trade_pair_id, limits) => {
 
         // swap开关
-        if (env.SWAP_SWITCH !== "1") return;
+        if (env.SWAP_SWITCH !== SwitchEnum.OPEN) return;
 
-        // TODO 根据交易对来提交交易
-        const orders = await this.transactionSwapDao.get(type);
+        // 获取orders
+        const orders = await this.transactionSwapDao.get(type, trade_pair_id, limits);
 
         // nonce_mapping
         let nonce_mapping: { [key: string]: bigint } = {};
 
+        // 遍历orders
         for (let i = 0; i < orders.length; i++) {
 
             const order = orders[i];
@@ -72,7 +73,7 @@ export class TransactionSwapService extends TypeOrmCrudService<TransactionSwapEn
             console.log({nonce_mapping});
 
             // 获取市值
-            const getAmountsOutDto = new GetAmountsOutDto(token_in_amount, [token_in, token_out], env.ROUTER_CONTRACT_ADDRESS);
+            const getAmountsOutDto = new GetAmountsOutDto(token_in_amount, [token_in, token_out], env.ROUTER_ADDRESS);
             const market_price = new BigNumber(await get_token_price(getAmountsOutDto));
 
             // 市值是否在合法范围内
@@ -82,8 +83,8 @@ export class TransactionSwapService extends TypeOrmCrudService<TransactionSwapEn
 
             const amount_in = await to_wei(order.amount_in);
             const deadline = (timestamp() + 86400 * 60 * 1000);
-            const swapDto = new SwapDto(amount_in, 0, [token_in, token_out], wallet_address, deadline, env.ROUTER_CONTRACT_ADDRESS);
-            const transactionDto = new TransactionDto(wallet_address, env.ROUTER_CONTRACT_ADDRESS, new BigNumber(0).valueOf(), '', order.wallet.private_key, nonce_mapping[wallet_address.toLowerCase()]++);
+            const swapDto = new SwapDto(amount_in, 0, [token_in, token_out], wallet_address, deadline, env.ROUTER_ADDRESS);
+            const transactionDto = new TransactionDto(wallet_address, env.ROUTER_ADDRESS, new BigNumber(0).valueOf(), '', order.wallet.private_key, nonce_mapping[wallet_address.toLowerCase()]++);
 
             // 提交交易
             this.swap(swapDto, transactionDto, order_id);

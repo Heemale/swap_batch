@@ -9,6 +9,15 @@ import {BalanceStatisticalDto} from "./dto/balance/balance-statistical.dto";
     model: {
         type: BalanceEntity,
     },
+    query: {
+        exclude: ['id'], // fix https://github.com/nestjsx/crud/issues/788
+        join: {
+            wallet: {
+                eager: true, // 使用 eager 加载关联数据
+                exclude: ['id'], // fix https://github.com/nestjsx/crud/issues/788
+            },
+        },
+    },
 })
 @ApiTags('余额')
 @Controller("balance")

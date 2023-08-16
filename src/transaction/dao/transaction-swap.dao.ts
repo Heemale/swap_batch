@@ -4,7 +4,7 @@ import {DataSource, Repository} from 'typeorm';
 import {TransactionSwapEntity} from '../entities/transaction-swap.entity';
 import {timestamp} from '../../common/util';
 import {SwapUpdateDto} from '../dto/swap/swap-update.dto';
-import {StatusEnum} from "../../common/enum";
+import {StatusEnum, SwitchEnum} from "../../common/enum";
 import {env} from "../../config";
 
 @Injectable()
@@ -47,9 +47,7 @@ export class TransactionSwapDao {
 
     }
 
-    async get(type: "never" | "failed") {
-
-        const counts = env.SUBMIT_SWAP_COUNTS;
+    async get(type: "never" | "failed", trade_pair_id, limits) {
 
         let statuses: Array<StatusEnum> = [];
 
@@ -73,7 +71,9 @@ export class TransactionSwapDao {
             .where('swap_order.status IN (:...statuses)', {statuses})
             .andWhere('swap_order.executetime <= :timestamp', {timestamp: timestamp()})
             .andWhere('swap_order.failed_counts < :failed_counts', {failed_counts: 10})
-            .limit(counts)
+            .andWhere('task.trade_pair = :trade_pair', {trade_pair: trade_pair_id})
+            .andWhere('task.swap_switch = :swap_switch', {trade_pair: SwitchEnum.OPEN})
+            .limit(limits)
             .getMany();
     }
 

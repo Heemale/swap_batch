@@ -6,7 +6,6 @@ import {from_wei, get_balance, get_token_balance} from "../web3";
 import {BalanceCreateDto} from "./dto/balance/balance-create.dto";
 import {timestamp} from "../common/util";
 import {BalanceDao} from "./dao/balance.dao";
-import {WalletEntity} from "../wallet/entities/wallet.entity";
 import {BalanceStatisticalDto} from "./dto/balance/balance-statistical.dto";
 import {WalletDao} from "../wallet/wallet.dao";
 
@@ -56,7 +55,7 @@ export class BalanceService extends TypeOrmCrudService<BalanceEntity> {
             }
 
         }
-        console.log({order_list});
+
         await this.balanceDao.create(order_list);
     }
 

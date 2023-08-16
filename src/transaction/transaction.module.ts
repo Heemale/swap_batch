@@ -16,7 +16,6 @@ import {TransactionApproveService} from "./transaction-approve.service";
 import {TransactionApproveAdminEntity} from "./entities/transaction-approve-admin.entity";
 import {TransactionApproveAdminDao} from "./dao/transaction-approve-admin.dao";
 import {TradePairEntity} from "../trade-pair/entities/trade-pair.entity";
-import {AdminTradePairEntity} from "../trade-pair/entities/admin-trade-pair.entity";
 import {WalletDao} from "../wallet/wallet.dao";
 import {WalletEntity} from "../wallet/entities/wallet.entity";
 import {TransactionPrepareEntity} from "./entities/transaction-prepare.entity";
@@ -41,6 +40,7 @@ import {BalanceEntity} from "./entities/balance.entity";
 import {BalanceController} from "./balance.controller";
 import {BalanceService} from "./balance.service";
 import {BalanceDao} from "./dao/balance.dao";
+import {TradePairModule} from "../trade-pair/trade-pair.module";
 
 @Module({
     imports: [
@@ -53,7 +53,6 @@ import {BalanceDao} from "./dao/balance.dao";
             TransactionSwapEntity,
             TransactionCollectEntity,
             TradePairEntity,
-            AdminTradePairEntity,
             TransactionPrepareEntity,
             AdminEntity,
             BalanceEntity

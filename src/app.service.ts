@@ -16,7 +16,7 @@ import {TransactionPrepareService} from "./transaction/transaction-prepare.servi
 
 import {GetWalletDto} from "./wallet/dto/get-wallet.dto";
 
-import {StatusEnum, TaskStatus, TradeType, WalletSource} from "./common/enum";
+import {StatusEnum, SwitchEnum, TaskStatus, TradeType, WalletSource} from "./common/enum";
 import {get_balance, get_nonce, to_wei} from "./web3";
 import {env, update_env} from "./config";
 import {random, timestamp, uint256_max} from "./common/util";
@@ -28,6 +28,7 @@ import {CollectBatchDto} from "./transaction/dto/collect/collect-batch.dto";
 import {CreateWalletBatchDto} from "./wallet/dto/create-wallet-batch.dto";
 import {TransactionApproveAdminDao} from "./transaction/dao/transaction-approve-admin.dao";
 import {TransactionSwapService} from "./transaction/transaction-swap.service";
+import {TradePairDao} from "./trade-pair/trade-pair.dao";
 
 @Injectable()
 export class AppService {
@@ -39,6 +40,7 @@ export class AppService {
         private readonly transactionCollectDao: TransactionCollectDao,
         private readonly transactionSwapDao: TransactionSwapDao,
         private readonly taskDao: TaskDao,
+        private readonly tradePairDao: TradePairDao,
         private readonly walletService: WalletService,
         private readonly transactionPrepareDao: TransactionPrepareDao,
         private readonly transactionSubsidyService: TransactionSubsidyService,
@@ -80,7 +82,7 @@ export class AppService {
             const {id: admin_id} = task.admin;
 
             let token_address = "";
-            const spender = env.ROUTER_CONTRACT_ADDRESS;
+            const spender = env.ROUTER_ADDRESS;
 
             // 交易类型
             if (task.trade_type === TradeType.BUY) {
@@ -171,7 +173,7 @@ export class AppService {
             const {id: admin_id} = task.admin;
 
             let token_address = "";
-            const spender = env.ROUTER_CONTRACT_ADDRESS;
+            const spender = env.ROUTER_ADDRESS;
 
             // 交易类型
             if (task.trade_type === TradeType.BUY) {
@@ -388,7 +390,7 @@ export class AppService {
             }
             if (token_in === "" || token_out === "") continue;
 
-            if (env.SWAP_SWITCH !== "1") continue;
+            if (env.SWAP_SWITCH !== SwitchEnum.OPEN) continue;
 
             // 获取用户
             const getWalletDto = new GetWalletDto(admin_id, wallet_begin_num, wallet_limit_num);
@@ -472,12 +474,20 @@ export class AppService {
 
         this.execute_swap_never_logger.log("√");
 
-        // TODO 获取trade-piars
+        // 获取trade-pairs
+        const trade_pairs = await this.tradePairDao.get_all();
 
-        // TODO 遍历trade-piars
+        // 遍历trade-pairs
+        for (let i = 0; i < trade_pairs.length; i++) {
 
-        // TODO 获取token_in为token0 || token_id为token1的记录（优化：多存一个字段交易对？），获取x条
-        this.transactionSwapService.execute_swap_order("never");
+            const trade_pair = trade_pairs[i];
+
+            const {id: trade_pair_id, open_switch, limits} = trade_pair;
+
+            if (open_switch !== SwitchEnum.OPEN) continue;
+
+            this.transactionSwapService.execute_swap_order("never", trade_pair_id, limits);
+        }
 
     }
 
@@ -487,7 +497,20 @@ export class AppService {
 
         this.execute_swap_failed_logger.log("√");
 
-        this.transactionSwapService.execute_swap_order("failed");
+        // 获取trade-pairs
+        const trade_pairs = await this.tradePairDao.get_all();
+
+        // 遍历trade-pairs
+        for (let i = 0; i < trade_pairs.length; i++) {
+
+            const trade_pair = trade_pairs[i];
+
+            const {id: trade_pair_id, open_switch, limits} = trade_pair;
+
+            if (open_switch !== SwitchEnum.OPEN) continue;
+
+            this.transactionSwapService.execute_swap_order("failed", trade_pair_id, limits);
+        }
 
     }
 

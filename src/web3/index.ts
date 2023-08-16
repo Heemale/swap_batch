@@ -92,7 +92,7 @@ export async function swap(swapDto: SwapDto) {
 
     const web3 = new Web3(new Web3.providers.HttpProvider(env.HTTP_PROVIDER));
     let {amountIn, amountOutMin, path, to, deadline, contract_address} = swapDto;
-    const my_contract = new web3.eth.Contract(env.PANCAKE_ROUTER_ABI, contract_address);
+    const my_contract = new web3.eth.Contract(env.ROUTER_ABI, contract_address);
     let transaction = my_contract.methods.swapExactTokensForTokensSupportingFeeOnTransferTokens(amountIn, new BigNumber(amountOutMin).toString(10), path, to, deadline);
 
     let data = '';
@@ -179,7 +179,7 @@ export async function get_token_price(getAmountsOutDto: GetAmountsOutDto) {
     const {amount_in, tokens, contract_address} = getAmountsOutDto;
 
     const web3 = new Web3(new Web3.providers.HttpProvider(env.HTTP_PROVIDER));
-    const my_contract = new web3.eth.Contract(env.PANCAKE_ROUTER_ABI, contract_address);
+    const my_contract = new web3.eth.Contract(env.ROUTER_ABI, contract_address);
     const result = await my_contract.methods.getAmountsOut(amount_in, tokens).call();
 
     return result[result.length - 1];

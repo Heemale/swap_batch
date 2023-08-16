@@ -25,7 +25,7 @@ export class BalanceEntity extends BaseEntity {
     balance: number;
 
     @ManyToOne(() => WalletEntity, (wallet) => wallet.balances)
-    @JoinColumn({name: 'wallet_id'})
+    @JoinColumn({name: 'wallet'})
     wallet: WalletEntity;
 
 }

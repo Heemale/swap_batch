@@ -118,11 +118,11 @@ export class TaskEntity extends BaseEntity {
     collect_orders: TransactionCollectEntity[];
 
     @ManyToOne(() => AdminEntity, (admin) => admin.tasks)
-    @JoinColumn({name: 'admin_id'})
+    @JoinColumn({name: 'admin'})
     admin: AdminEntity;
 
     @ManyToOne(() => TradePairEntity, (trade_pair) => trade_pair.tasks)
-    @JoinColumn({name: 'trade_pair_id'})
+    @JoinColumn({name: 'trade_pair'})
     trade_pair: TradePairEntity;
 
 }

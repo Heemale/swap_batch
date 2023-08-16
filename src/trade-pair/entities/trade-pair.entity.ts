@@ -20,6 +20,12 @@ export class TradePairEntity extends BaseEntity {
     @Column({comment: 'token1名称'})
     token1_name: string;
 
+    @Column({comment: '是否开放', type: 'tinyint', default: 0, nullable: false})
+    open_switch: number;
+
+    @Column({comment: '每次提交交易数', default: 0, nullable: false})
+    limits: number;
+
     @OneToMany(() => TaskEntity, (task) => task.trade_pair)
     tasks: TaskEntity[];
 

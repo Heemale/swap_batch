@@ -10,6 +10,7 @@ import {AuthModule} from './auth/auth.module';
 import {TaskModule} from './task/task.module';
 import {AdminModule} from './admin/admin.module';
 import {TradePairModule} from './trade-pair/trade-pair.module';
+import {ConfigModule} from "./config/config.module";
 
 @Module({
     imports: [
@@ -31,6 +32,7 @@ import {TradePairModule} from './trade-pair/trade-pair.module';
         TaskModule,
         AdminModule,
         TradePairModule,
+        ConfigModule
     ],
     controllers: [AppController],
     providers: [AppService],

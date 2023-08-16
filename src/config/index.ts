@@ -10,18 +10,10 @@ const DB_DATABASE = process.env.DB_DATABASE || "swapbatch3";
 const PORT = parseInt(process.env.PORT) || 3000;
 
 export let env: env_type = {
-    USER_ADDRESS: '',
-    PRIVATE_KEY: '',
     HTTP_PROVIDER: '',
-    ROUTER_CONTRACT_ADDRESS: '',
-    TRANSFER_ETH_HELPER_ADDRESS: '0x8b97a7CDAc623885454b3C7463a672C07136f6bd',
-    TRANSFER_HELPER_ADDRESS: '0x5f3148430B7c3a79e2F7b1aaBAaa23591e21BEFB',
-    DB: {
-        HOST: DB_HOST,
-        USERNAME: DB_USERNAME,
-        PASSWORD: DB_PASSWORD,
-        DATABASE: DB_DATABASE,
-    },
+    ROUTER_ADDRESS: '',
+    TRANSFER_ETH_HELPER_ADDRESS: '',
+    TRANSFER_HELPER_ADDRESS: '',
     ERC20_ABI: [
         {
             'inputs': [
@@ -305,7 +297,7 @@ export let env: env_type = {
             'type': 'function',
         },
     ],
-    PANCAKE_ROUTER_ABI: [
+    ROUTER_ABI: [
         {
             'inputs': [
                 {
@@ -1300,12 +1292,17 @@ export let env: env_type = {
             "internalType": "address[]"
         }, {"type": "uint256[]", "name": "nums", "internalType": "uint256[]"}]
     }],
-    SWAP_SWITCH: '0',
-    COllECT_SWITCH: '0',
+    DB: {
+        HOST: DB_HOST,
+        USERNAME: DB_USERNAME,
+        PASSWORD: DB_PASSWORD,
+        DATABASE: DB_DATABASE,
+    },
+    SWAP_SWITCH: 0,
     CREATE_TIME: 86400,
     CREATE_TIME_LAST: 86400,
-    SUBMIT_SWAP_COUNTS: 10,
     PORT: PORT,
+    USER_ADDRESS : "USER_ADDRESS" // TODO 待移除
 };
 
 export const pool = mysql.createPool({
@@ -1322,16 +1319,15 @@ export const get_config = async () => {
 
     let values = [
         'HTTP_PROVIDER',
-        'ROUTER_CONTRACT_ADDRESS',
-        'USER_ADDRESS',
-        'PRIVATE_KEY',
+        'ROUTER_ADDRESS',
+        'TRANSFER_ETH_HELPER_ADDRESS',
+        'TRANSFER_HELPER_ADDRESS',
         'ERC20_ABI',
-        'PANCAKE_ROUTER_ABI',
+        'ROUTER_ABI',
+        'TRANSFER_ETH_HELPER_ABI',
+        'TRANSFER_HELPER_ABI',
         'SWAP_SWITCH',
-        'COllECT_SWITCH',
         'CREATE_TIME',
-        'EXECUTE_TIME',
-        'SUBMIT_SWAP_COUNTS',
     ];
     let sql = `select * from fa_config where name in (?);`;
     let rows;
@@ -1349,39 +1345,39 @@ export const update_env = async () => {
     if (_config.status === -1) return '读取配置失败';
 
     let HTTP_PROVIDER,
-        ROUTER_CONTRACT_ADDRESS,
-        USER_ADDRESS,
-        PRIVATE_KEY,
+        ROUTER_ADDRESS,
+        TRANSFER_ETH_HELPER_ADDRESS,
+        TRANSFER_HELPER_ADDRESS,
         ERC20_ABI,
-        PANCAKE_ROUTER_ABI,
+        ROUTER_ABI,
+        TRANSFER_ETH_HELPER_ABI,
+        TRANSFER_HELPER_ABI,
         SWAP_SWITCH,
-        COllECT_SWITCH,
-        CREATE_TIME,
-        SUBMIT_SWAP_COUNTS;
+        CREATE_TIME;
 
     for (let i = 0; i < _config.msg.length; i++) {
         let item = _config.msg[i];
         if (item.name === 'HTTP_PROVIDER') HTTP_PROVIDER = item.value;
-        if (item.name === 'ROUTER_CONTRACT_ADDRESS') ROUTER_CONTRACT_ADDRESS = item.value;
-        if (item.name === 'USER_ADDRESS') USER_ADDRESS = item.value;
-        if (item.name === 'PRIVATE_KEY') PRIVATE_KEY = item.value;
+        if (item.name === 'ROUTER_ADDRESS') ROUTER_ADDRESS = item.value;
+        if (item.name === 'TRANSFER_ETH_HELPER_ADDRESS') TRANSFER_ETH_HELPER_ADDRESS = item.value;
+        if (item.name === 'TRANSFER_HELPER_ADDRESS') TRANSFER_HELPER_ADDRESS = item.value;
         if (item.name === 'ERC20_ABI') ERC20_ABI = item.value;
-        if (item.name === 'PANCAKE_ROUTER_ABI') PANCAKE_ROUTER_ABI = item.value;
-        if (item.name === 'SWAP_SWITCH') SWAP_SWITCH = item.value;
-        if (item.name === 'COllECT_SWITCH') COllECT_SWITCH = item.value;
+        if (item.name === 'ROUTER_ABI') ROUTER_ABI = item.value;
+        if (item.name === 'TRANSFER_ETH_HELPER_ABI') TRANSFER_ETH_HELPER_ABI = item.value;
+        if (item.name === 'TRANSFER_HELPER_ABI') TRANSFER_HELPER_ABI = item.value;
+        if (item.name === 'SWAP_SWITCH') SWAP_SWITCH = parseInt(item.value);
         if (item.name === 'CREATE_TIME') CREATE_TIME = parseInt(item.value);
-        if (item.name === 'SUBMIT_SWAP_COUNTS') SUBMIT_SWAP_COUNTS = parseInt(item.value);
     }
 
     if (HTTP_PROVIDER !== undefined) env.HTTP_PROVIDER = HTTP_PROVIDER;
-    if (ROUTER_CONTRACT_ADDRESS !== undefined) env.ROUTER_CONTRACT_ADDRESS = ROUTER_CONTRACT_ADDRESS;
-    if (USER_ADDRESS !== undefined) env.USER_ADDRESS = USER_ADDRESS;
-    if (PRIVATE_KEY !== undefined) env.PRIVATE_KEY = PRIVATE_KEY;
+    if (ROUTER_ADDRESS !== undefined) env.ROUTER_ADDRESS = ROUTER_ADDRESS;
+    if (TRANSFER_ETH_HELPER_ADDRESS !== undefined) env.TRANSFER_ETH_HELPER_ADDRESS = TRANSFER_ETH_HELPER_ADDRESS;
+    if (TRANSFER_HELPER_ADDRESS !== undefined) env.TRANSFER_HELPER_ADDRESS = TRANSFER_HELPER_ADDRESS;
     if (ERC20_ABI !== undefined) env.ERC20_ABI = eval('(' + ERC20_ABI + ')');
-    if (PANCAKE_ROUTER_ABI !== undefined) env.PANCAKE_ROUTER_ABI = eval('(' + PANCAKE_ROUTER_ABI + ')');
+    if (ROUTER_ABI !== undefined) env.ROUTER_ABI = eval('(' + ROUTER_ABI + ')');
+    if (TRANSFER_ETH_HELPER_ABI !== undefined) env.TRANSFER_ETH_HELPER_ABI = eval('(' + TRANSFER_ETH_HELPER_ABI + ')');
+    if (TRANSFER_HELPER_ABI !== undefined) env.TRANSFER_HELPER_ABI = eval('(' + TRANSFER_HELPER_ABI + ')');
     if (SWAP_SWITCH !== undefined) env.SWAP_SWITCH = SWAP_SWITCH;
-    if (COllECT_SWITCH !== undefined) env.COllECT_SWITCH = COllECT_SWITCH;
     if (CREATE_TIME !== undefined) env.CREATE_TIME = CREATE_TIME;
-    if (SUBMIT_SWAP_COUNTS !== undefined) env.SUBMIT_SWAP_COUNTS = SUBMIT_SWAP_COUNTS;
 
 }
