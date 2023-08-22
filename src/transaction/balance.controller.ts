@@ -16,6 +16,10 @@ import {BalanceStatisticalDto} from "./dto/balance/balance-statistical.dto";
                 eager: true, // 使用 eager 加载关联数据
                 exclude: ['id'], // fix https://github.com/nestjsx/crud/issues/788
             },
+            "wallet.task": {
+                eager: true, // 使用 eager 加载关联数据
+                exclude: ['id'], // fix https://github.com/nestjsx/crud/issues/788
+            },
         },
     },
 })

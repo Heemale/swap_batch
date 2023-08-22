@@ -17,6 +17,7 @@ export class AdminDao {
 
         return await this.dataSource.getRepository(AdminEntity)
             .createQueryBuilder('admin')
+            .leftJoinAndSelect('admin.auth_group', 'auth_group')
             .where('username = :username', {username})
             .getOne();
     }

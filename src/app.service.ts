@@ -167,8 +167,9 @@ export class AppService {
                 id: task_id,
                 wallet_source,
                 wallet_create_counts,
-                wallet_begin_num,
-                wallet_limit_num
+                wallet_begin_num, // 移除
+                wallet_limit_num // 移除
+                // wallet_from_task_id
             } = task;
             const {id: admin_id} = task.admin;
 
@@ -195,8 +196,10 @@ export class AppService {
                 limit_num = result.limit_num;
             } else if (wallet_source === WalletSource.PICK) {
                 // 选择钱包
-                const getWalletDto = new GetWalletDto(admin_id, wallet_begin_num, wallet_limit_num);
-                const result = await this.walletDao.get_address_special(getWalletDto);
+                const getWalletDto = new GetWalletDto(admin_id, wallet_begin_num, wallet_limit_num); // 移除
+                const result = await this.walletDao.get_address_special(getWalletDto); // 移除
+                // 改为根据来源task_id获取钱包
+                // const result = await this.walletDao.get_address_by_task_id(wallet_from_task_id);
                 if (result.length === 0) continue;
                 begin_num = result[0].id;
                 limit_num = result.length;
@@ -364,8 +367,9 @@ export class AppService {
                 range_switch,
                 rangestarttime,
                 rangeendtime,
-                wallet_begin_num,
-                wallet_limit_num,
+                wallet_begin_num, // 移除
+                wallet_limit_num, // 移除
+                // wallet_from_task_id,
                 swap_max,
                 swap_min,
                 times,
@@ -393,8 +397,9 @@ export class AppService {
             if (env.SWAP_SWITCH !== SwitchEnum.OPEN) continue;
 
             // 获取用户
-            const getWalletDto = new GetWalletDto(admin_id, wallet_begin_num, wallet_limit_num);
-            const wallets = await this.walletDao.get_address_special(getWalletDto);
+            const getWalletDto = new GetWalletDto(admin_id, wallet_begin_num, wallet_limit_num); // 移除
+            const wallets = await this.walletDao.get_address_special(getWalletDto); // 移除
+            // const wallets = await this.walletDao.get_address_by_task_id(wallet_from_task_id);
 
             // 生成订单（swap）
             let order_list = [];
@@ -546,6 +551,7 @@ export class AppService {
         }
     }
 
+
     // @Cron(CronExpression.EVERY_MINUTE)
     async create_collect() {
 
@@ -559,7 +565,13 @@ export class AppService {
 
             const task = tasks[i];
 
-            const {id: task_id, wallet_begin_num, wallet_limit_num, collecttime} = task;
+            const {
+                id: task_id,
+                wallet_begin_num, // 移除
+                wallet_limit_num, // 移除
+                // wallet_from_task_id,
+                collecttime
+            } = task;
 
             const {id: admin_id} = task.admin;
 
@@ -578,8 +590,9 @@ export class AppService {
             }
             if (token_address === "") continue;
 
-            const getWalletDto = new GetWalletDto(admin_id, wallet_begin_num, wallet_limit_num);
-            const result = await this.walletDao.get_address_special(getWalletDto);
+            const getWalletDto = new GetWalletDto(admin_id, wallet_begin_num, wallet_limit_num); // 移除
+            const result = await this.walletDao.get_address_special(getWalletDto); // 移除
+            // const result = await this.walletDao.get_address_by_task_id(wallet_from_task_id);
             if (result.length === 0) continue;
             const begin_num = result[0].id;
             const limit_num = result.length;
@@ -616,7 +629,12 @@ export class AppService {
         for (let i = 0; i < tasks.length; i++) {
 
             const task = tasks[i];
-            const {id: task_id, wallet_source, wallet_create_counts, wallet_limit_num} = task;
+            const {
+                id: task_id,
+                wallet_source,
+                wallet_create_counts,
+                wallet_limit_num
+            } = task;
 
             // 根据task_id获取collect成功次数
             const success_counts = await this.transactionCollectDao.get_success_counts(task_id);

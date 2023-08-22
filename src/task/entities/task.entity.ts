@@ -38,6 +38,9 @@ export class TaskEntity extends BaseEntity {
     @Column({comment: '创建钱包数量', default: null, nullable: true})
     wallet_create_counts: number;
 
+    // @Column({comment: '钱包来源订单ID', default: null, nullable: true})
+    // wallet_from_task_id: number;
+
     @Column({comment: '选择钱包起始专用编号', default: null, nullable: true})
     wallet_begin_num: number;
 

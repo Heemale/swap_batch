@@ -20,8 +20,8 @@ async function bootstrap() {
 
     // 设置swagger文档
     const config = new DocumentBuilder()
-        .setTitle('swap刷量3')
-        .setDescription('swap刷量3 接口文档')
+        .setTitle('swap刷量4')
+        .setDescription('swap刷量4 接口文档')
         .setVersion('1.0')
         .addBearerAuth()
         .build();

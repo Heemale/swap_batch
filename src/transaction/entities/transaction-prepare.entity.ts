@@ -58,7 +58,7 @@ export class TransactionPrepareEntity extends BaseEntity {
     token_status: StatusEnum;
 
     @ManyToOne(() => TaskEntity, (task) => task.prepare_orders)
-    @JoinColumn({name: 'task_id'})
+    @JoinColumn({name: 'task'})
     task: TaskEntity;
 
 }

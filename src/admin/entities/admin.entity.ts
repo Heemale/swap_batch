@@ -1,6 +1,7 @@
-import {Column, Entity, Index, OneToMany, PrimaryGeneratedColumn} from "typeorm";
+import {Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn} from "typeorm";
 import {TaskEntity} from "../../task/entities/task.entity";
 import {TransactionApproveAdminEntity} from "../../transaction/entities/transaction-approve-admin.entity";
+import {AuthGroupEntity} from "../../auth/entities/auth-group.entity";
 
 @Entity("fa_admin")
 export class AdminEntity {
@@ -135,4 +136,8 @@ export class AdminEntity {
 
     @OneToMany(() => TransactionApproveAdminEntity, (approve_order) => approve_order.admin)
     approve_orders: TransactionApproveAdminEntity[];
+
+    @ManyToOne(() => AuthGroupEntity, (auth_group) => auth_group.admins)
+    @JoinColumn({name: 'auth_group'})
+    auth_group: AuthGroupEntity;
 }
