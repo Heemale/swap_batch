@@ -68,7 +68,8 @@ export class WalletDao {
         return await this.dataSource
             .getRepository(WalletEntity)
             .createQueryBuilder('wallet')
-            .where('wallet.task_id >= :task_id', {task_id})
+            .leftJoinAndSelect('wallet.task', 'task') // Left join with 'task'
+            .where('task.id = :task_id', { task_id }) // Filter by task_id
             .getMany();
     }
 

@@ -68,7 +68,7 @@ export class TransactionApproveDao {
                 status1: StatusEnum.NEVER,
                 status2: StatusEnum.FAILURE
             })
-            .groupBy("wallet_id")
+            .groupBy("wallet.id")
             .getMany();
     }
 

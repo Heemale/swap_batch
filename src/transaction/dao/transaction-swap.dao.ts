@@ -27,7 +27,7 @@ export class TransactionSwapDao {
                 .execute()
                 .then((result) => {
                     return {
-                        affectedRows: result.raw.affectedRows,
+                        affectedRows: result?.raw?.affectedRows,
                     };
                 });
         } catch (e) {
@@ -41,7 +41,7 @@ export class TransactionSwapDao {
 
         return await this.dataSource.getRepository(TransactionSwapEntity)
             .createQueryBuilder('swap_order')
-            .where('task_id = :task_id', {task_id})
+            .where('task = :task', {task: task_id})
             .andWhere('status = :status', {status: StatusEnum.CHECK_SUCCESS})
             .getCount();
 
@@ -72,7 +72,7 @@ export class TransactionSwapDao {
             .andWhere('swap_order.executetime <= :timestamp', {timestamp: timestamp()})
             .andWhere('swap_order.failed_counts < :failed_counts', {failed_counts: 10})
             .andWhere('task.trade_pair = :trade_pair', {trade_pair: trade_pair_id})
-            .andWhere('task.swap_switch = :swap_switch', {trade_pair: SwitchEnum.OPEN})
+            .andWhere('task.swap_switch = :swap_switch', {swap_switch: SwitchEnum.OPEN})
             .limit(limits)
             .getMany();
     }

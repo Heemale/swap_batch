@@ -1302,7 +1302,7 @@ export let env: env_type = {
     CREATE_TIME: 86400,
     CREATE_TIME_LAST: 86400,
     PORT: PORT,
-    USER_ADDRESS : "USER_ADDRESS" // TODO 待移除
+    // USER_ADDRESS : "USER_ADDRESS" // TODO 待移除
 };
 
 export const pool = mysql.createPool({

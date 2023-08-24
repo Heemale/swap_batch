@@ -23,7 +23,7 @@ import {ConfigModule} from "./config/config.module";
             'database': env.DB.DATABASE,
             'autoLoadEntities': true,
             'synchronize': true,
-            'logging': true,
+            'logging': false,
         }),
         ScheduleModule.forRoot(),
         WalletModule,

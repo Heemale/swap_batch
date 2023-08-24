@@ -21,9 +21,9 @@ import {SwapDto} from "../web3/dto/swap.dto";
 import {TransactionDto} from "../web3/dto/transaction.dto";
 import {SwapUpdateDto} from "./dto/swap/swap-update.dto";
 import {StatusEnum, SwitchEnum} from "../common/enum";
-import Web3 from "web3";
 import {WalletDao} from "../wallet/wallet.dao";
 import {TransactionSwapDao} from "./dao/transaction-swap.dao";
+export const Web3 = require('web3');
 
 @Injectable()
 export class TransactionSwapService extends TypeOrmCrudService<TransactionSwapEntity> {
@@ -70,7 +70,6 @@ export class TransactionSwapService extends TypeOrmCrudService<TransactionSwapEn
             if (!(wallet_address.toLowerCase() in nonce_mapping)) {
                 nonce_mapping[wallet_address.toLowerCase()] = await get_nonce(wallet_address);
             }
-            console.log({nonce_mapping});
 
             // 获取市值
             const getAmountsOutDto = new GetAmountsOutDto(token_in_amount, [token_in, token_out], env.ROUTER_ADDRESS);
@@ -94,8 +93,6 @@ export class TransactionSwapService extends TypeOrmCrudService<TransactionSwapEn
 
     swap = async (swapDto: SwapDto, transactionDto: TransactionDto, order_id) => {
 
-        console.log("swap()");
-
         let web3, data, signed, receipt;
 
         let swap_status = new SwapUpdateDto(order_id, StatusEnum.NEVER, null, null, null, false);
@@ -117,20 +114,9 @@ export class TransactionSwapService extends TypeOrmCrudService<TransactionSwapEn
         const amount_in = swapDto.amountIn;
         const from = transactionDto.from;
         const token_address = swapDto.path[0];
-        console.log({from, token_address})
         const balance = await get_token_balance(from, token_address);
         const amount_in_BN = new BigNumber(amount_in);
         const balance_BN = new BigNumber(balance);
-
-        console.log({
-            swapDto,
-            transactionDto,
-            order_id
-        })
-        console.log({
-            amount_in_BN: amount_in_BN.valueOf(),
-            balance_BN: balance_BN.valueOf()
-        });
 
         if (amount_in_BN.gt(balance_BN)) {
             swap_status.status = StatusEnum.FAILURE;

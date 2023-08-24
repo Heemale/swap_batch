@@ -40,39 +40,41 @@ export class TransactionCollectService extends TypeOrmCrudService<TransactionCol
 
     create_collect_order = async (collectBatchDto: CollectBatchDto) => {
 
-        const {begin_num, limit_num, token_addresses, task_id} = collectBatchDto;
+        const {wallets, token_addresses, task_id} = collectBatchDto;
 
         // 生成订单（归集）
         let order_list = [];
+
         for (let i = 0; i < token_addresses.length; i++) {
 
             const token_address = token_addresses[i];
 
-            let wallet_id = begin_num;
-            for (let j = begin_num; j < begin_num + limit_num; j++) {
+            for (let j = 0; j < wallets.length; j++) {
+
+                const {id: wallet_id} = wallets[j];
+
                 order_list.push({
                     task: task_id, wallet: wallet_id, amount: null, token_address, createtime: timestamp(),
                 });
-                wallet_id++;
+
             }
 
         }
 
         // 创建订单（归集）
-        await this.collectTransactionDao.create(order_list);
+        return await this.collectTransactionDao.create(order_list);
     }
 
     collect = async (orders) => {
 
         for (let i = 0; i < orders.length; i++) {
 
-            const item = orders[i];
-            const order_id = item.id;
-            const contract_address = item.token_address;
+            const order = orders[i];
+            const {id: order_id, token_address: contract_address} = order;
+            const {address: from, private_key} = order.wallet;
+            const {admin_address,} = order.task.admin;
 
-            const from = item.address;
             const nonce = await get_nonce(from);
-            const private_key = item.private_key;
 
             let web3, to, balance, data, transaction_config, signed, receipt;
             let collectUpdateDto = new CollectUpdateDto(order_id, StatusEnum.NEVER, null, null, '0');
@@ -80,7 +82,7 @@ export class TransactionCollectService extends TypeOrmCrudService<TransactionCol
 
             // to 和 balance（如果是eth转账，后面会重新计算数据）
             if (contract_address == '') {
-                to = env.USER_ADDRESS;
+                to = admin_address;
                 balance = await get_balance(from);
             } else {
                 to = contract_address;
@@ -100,7 +102,7 @@ export class TransactionCollectService extends TypeOrmCrudService<TransactionCol
             if (contract_address == '') {
                 transaction_config = {from, to, value: balance};
             } else {
-                const transferDto = new TransferDto(env.USER_ADDRESS, balance, contract_address);
+                const transferDto = new TransferDto(admin_address, balance, contract_address);
                 try {
                     data = await transfer(transferDto);
                     transactionDto.data = data;
@@ -211,7 +213,7 @@ export class TransactionCollectService extends TypeOrmCrudService<TransactionCol
                 await this.collectTransactionDao.update(collectUpdateDto);
                 return;
             }
-            if (_to.toLowerCase() !== env.USER_ADDRESS.toLowerCase()) {
+            if (_to.toLowerCase() !== admin_address.toLowerCase()) {
                 collectUpdateDto.status = StatusEnum.CHECK_FAILURE;
                 collectUpdateDto.remark = '核验失败，to不一致';
                 await this.collectTransactionDao.update(collectUpdateDto);

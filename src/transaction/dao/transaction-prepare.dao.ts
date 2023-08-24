@@ -75,7 +75,7 @@ export class TransactionPrepareDao {
 
         return await this.dataSource.getRepository(TransactionPrepareEntity)
             .createQueryBuilder('orders')
-            .where('task_id = :task_id', {task_id})
+            .where('task = :task', {task: task_id})
             .andWhere('(gas_status = :status1 OR gas_status = :status2 OR token_status = :status1 OR token_status = :status2)', {
                 status1: StatusEnum.NEVER,
                 status2: StatusEnum.FAILURE

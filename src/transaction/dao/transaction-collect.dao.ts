@@ -4,8 +4,9 @@ import {DataSource, Repository} from 'typeorm';
 import {timestamp} from '../../common/util';
 import {TransactionCollectEntity} from '../entities/transaction-collect.entity';
 import {CollectUpdateDto} from '../dto/collect/collect-update.dto';
-import {StatusEnum} from "../../common/enum";
+import {StatusEnum, SwitchEnum, TaskStatus} from "../../common/enum";
 import {pool} from "../../config";
+import {TaskEntity} from "../../task/entities/task.entity";
 
 @Injectable()
 export class TransactionCollectDao {
@@ -17,7 +18,7 @@ export class TransactionCollectDao {
     ) {
     }
 
-    async create(order_list: Array<TransactionCollectEntity>) {
+    create = async (order_list: Array<TransactionCollectEntity>) => {
         try {
             return await this.dataSource
                 .createQueryBuilder()
@@ -25,18 +26,13 @@ export class TransactionCollectDao {
                 .into(TransactionCollectEntity)
                 .values(order_list)
                 .execute()
-                .then((result) => {
-                    return {
-                        affectedRows: result.raw.affectedRows,
-                    };
-                });
         } catch ({message}) {
             return message;
         }
 
     }
 
-    async update(collectUpdateDto: CollectUpdateDto) {
+    update = async (collectUpdateDto: CollectUpdateDto) => {
 
         let {id, status, remark, hash, amount} = collectUpdateDto;
 
@@ -58,46 +54,45 @@ export class TransactionCollectDao {
         }
     }
 
-    async get_success_counts(task_id: number) {
+    get_success_counts = async (task_id: number) => {
 
         return await this.dataSource.getRepository(TransactionCollectEntity)
             .createQueryBuilder('collect_order')
-            .where('task_id = :task_id', {task_id})
+            .where('task = :task', {task: task_id})
             .andWhere('status = :status', {status: StatusEnum.CHECK_SUCCESS})
             .getCount();
 
     }
 
-    async get_wrong() {
+    get_gas_record = async () => {
 
-        let values = [
-            StatusEnum.NEVER,
-            StatusEnum.FAILURE,
-            StatusEnum.NEVER,
-            StatusEnum.FAILURE
-        ];
+        return await this.dataSource.getRepository(TransactionCollectEntity)
+            .createQueryBuilder('collect_order')
+            .leftJoinAndSelect('collect_order.task', 'task')
+            .leftJoinAndSelect('task.admin', 'admin')
+            .where('collect_order.token_address = :token_address', {token_address: ""})
+            .andWhere('(collect_order.status = :status1 OR collect_order.status = :status2)', {
+                status1: StatusEnum.NEVER,
+                status2: StatusEnum.FAILURE
+            })
+            .groupBy('wallet')
+            .getMany();
+    }
 
-        let sql = `
-        SELECT orders.*,wallet.address,wallet.private_key FROM (
-        \tSELECT * FROM (
-        \t\tSELECT * FROM fa_transaction_collect
-        \t\tWHERE token_address <> '' AND (status = ? OR status = ?)
-        \t\tGROUP BY wallet_id
-        \t\t
-        \t\tUNION ALL
-        \t\t
-        \t\tSELECT * FROM fa_transaction_collect
-        \t\tWHERE token_address = '' AND (status = ? OR status = ?)
-        \t\tGROUP BY wallet_id
-        \t\t
-        \t) t1
-        \tGROUP BY wallet_id) orders
-        LEFT JOIN fa_wallet wallet
-        ON orders.wallet_id = wallet.id;
-        `
+    get_token_record = async () => {
 
-        let [rows,] = await pool.query(sql, [...values]);
-        return rows
+        return await this.dataSource.getRepository(TransactionCollectEntity)
+            .createQueryBuilder('collect_order')
+            .leftJoinAndSelect('collect_order.task', 'task')
+            .leftJoinAndSelect('collect_order.wallet', 'wallet')
+            .leftJoinAndSelect('task.admin', 'admin')
+            .where('collect_order.token_address != :token_address', {token_address: ""})
+            .andWhere('(collect_order.status = :status1 OR collect_order.status = :status2)', {
+                status1: StatusEnum.NEVER,
+                status2: StatusEnum.FAILURE
+            })
+            .groupBy('wallet')
+            .getMany();
     }
 
 }

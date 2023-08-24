@@ -66,7 +66,7 @@ export class TransactionApproveAdminDao {
     async get(admin_id, token_address, spender) {
         return await this.dataSource.getRepository(TransactionApproveAdminEntity)
             .createQueryBuilder('approve_orders')
-            .where('admin_id = :admin_id', {admin_id})
+            .where('admin = :admin', {admin: admin_id})
             .andWhere('token_address = :token_address', {token_address})
             .andWhere('spender = :spender', {spender})
             .getOne();

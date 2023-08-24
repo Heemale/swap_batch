@@ -1,7 +1,7 @@
 import {Injectable} from '@nestjs/common';
 import {TransactionPrepareDao} from "./dao/transaction-prepare.dao";
 import {env} from "../config";
-import {timestamp} from "../common/util";
+import {random, timestamp} from "../common/util";
 import {TypeOrmCrudService} from "@nestjsx/crud-typeorm";
 import {TransactionPrepareEntity} from "./entities/transaction-prepare.entity";
 import {InjectRepository} from "@nestjs/typeorm";
@@ -16,10 +16,26 @@ export class TransactionPrepareService extends TypeOrmCrudService<TransactionPre
         super(repo);
     }
 
-    create = async (task_id, times_arr, token_address) => {
+    create = async (
+        task_id,
+        times_arr,
+        token_address,
+        subsidy_gas_max,
+        subsidy_gas_min,
+        subsidy_token_max,
+        subsidy_token_min
+    ) => {
 
         // 生成订单（准备）
-        const order_list = generate_prepare_order(times_arr, task_id, token_address);
+        const order_list = generate_prepare_order(
+            task_id,
+            times_arr,
+            token_address,
+            subsidy_gas_max,
+            subsidy_gas_min,
+            subsidy_token_max,
+            subsidy_token_min
+        );
 
         // 创建订单（准备）
         await this.transactionPrepareDao.create(order_list);
@@ -27,7 +43,15 @@ export class TransactionPrepareService extends TypeOrmCrudService<TransactionPre
 
 }
 
-export const generate_prepare_order = (times_arr, task_id, token_address) => {
+export const generate_prepare_order = (
+    task_id,
+    times_arr,
+    token_address,
+    subsidy_gas_max,
+    subsidy_gas_min,
+    subsidy_token_max,
+    subsidy_token_min
+) => {
 
     const order_list: Array<any> = [];
     const createtime = timestamp();
@@ -39,6 +63,8 @@ export const generate_prepare_order = (times_arr, task_id, token_address) => {
             task: task_id,
             begin_num: start,
             limit_num: counts,
+            gas_amount: random(subsidy_gas_max, subsidy_gas_min),
+            token_amount: random(subsidy_token_max, subsidy_token_min),
             token_address,
             spender: env.ROUTER_ADDRESS,
             createtime

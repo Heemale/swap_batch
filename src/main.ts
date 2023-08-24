@@ -29,7 +29,12 @@ async function bootstrap() {
     SwaggerModule.setup('docs', app, document);
 
     // 设置跨域
-    app.enableCors();
+    app.enableCors({
+        origin: '*', // 指定允许跨域的域名
+        methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', // 指定允许的 HTTP 方法
+        credentials: true, // 允许携带身份凭证，如 cookies
+        allowedHeaders: 'Content-Type,Authorization', // 允许的请求头
+    });
 
     await app.listen(env.PORT);
 }
