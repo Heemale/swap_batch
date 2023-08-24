@@ -17,7 +17,6 @@ export interface env_type {
     CREATE_TIME: number,
     CREATE_TIME_LAST: number,
     PORT: number,
-    // USER_ADDRESS: string
 }
 
 export interface timesType {
